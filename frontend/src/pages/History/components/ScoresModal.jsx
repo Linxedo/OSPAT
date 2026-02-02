@@ -4,40 +4,32 @@ import { Modal, Card, Row, Col, Badge } from 'react-bootstrap'
 const ScoresModal = ({ show, onHide, selectedResult, hardModeThreshold }) => {
     const getMinigameName = (mgKey) => {
         const names = {
-            mg1_score: 'Reaction Speed',
-            mg2_score: 'Color Matching', 
-            mg3_score: 'Memory Test',
-            mg4_score: 'Rhythm Game OSU',
-            mg5_score: 'Shape Game'
+            minigame1_score: 'Reaction Speed',
+            minigame2_score: 'Color Matching',
+            minigame3_score: 'Memory Test',
+            minigame4_score: 'Rhythm Game OSU',
+            minigame5_score: 'Shape Game'
         }
         return names[mgKey] || mgKey
     }
 
     const getMinigameIcon = (mgKey) => {
         const icons = {
-            mg1_score: 'bi-lightning-fill',
-            mg2_score: 'bi-palette-fill',
-            mg3_score: 'bi-memory',
-            mg4_score: 'bi-music-note-beamed',
-            mg5_score: 'bi-triangle-fill'
+            minigame1_score: 'bi-lightning-fill',
+            minigame2_score: 'bi-palette-fill',
+            minigame3_score: 'bi-memory',
+            minigame4_score: 'bi-music-note-beamed',
+            minigame5_score: 'bi-triangle-fill'
         }
         return icons[mgKey] || 'bi-controller'
     }
 
-    const getDifficulty = (score) => {
-        return score >= hardModeThreshold ? 'Hard' : 'Normal'
-    }
-
-    const getDifficultyVariant = (score) => {
-        return score >= hardModeThreshold ? 'warning' : 'info'
-    }
-
     const minigameScores = selectedResult ? [
-        { key: 'mg1_score', score: selectedResult.mg1_score },
-        { key: 'mg2_score', score: selectedResult.mg2_score },
-        { key: 'mg3_score', score: selectedResult.mg3_score },
-        { key: 'mg4_score', score: selectedResult.mg4_score },
-        { key: 'mg5_score', score: selectedResult.mg5_score }
+        { key: 'minigame1_score', score: selectedResult.minigame1_score },
+        { key: 'minigame2_score', score: selectedResult.minigame2_score },
+        { key: 'minigame3_score', score: selectedResult.minigame3_score },
+        { key: 'minigame4_score', score: selectedResult.minigame4_score },
+        { key: 'minigame5_score', score: selectedResult.minigame5_score }
     ].filter(mg => mg.score !== null && mg.score !== undefined) : []
 
     return (
@@ -127,25 +119,17 @@ const ScoresModal = ({ show, onHide, selectedResult, hardModeThreshold }) => {
                                     <Card className="border-0 shadow-sm h-100" style={{ background: 'var(--bg-secondary)' }}>
                                         <Card.Body className="p-3 text-center">
                                             <div className="mb-3">
-                                                <i 
-                                                    className={`bi ${getMinigameIcon(minigame.key)} text-primary`} 
+                                                <i
+                                                    className={`bi ${getMinigameIcon(minigame.key)} text-primary`}
                                                     style={{ fontSize: '2rem' }}
                                                 ></i>
                                             </div>
                                             <h6 className="mb-2 fw-bold" style={{ color: 'var(--text-primary)' }}>
                                                 {getMinigameName(minigame.key)}
                                             </h6>
-                                            <div className="mb-2">
+                                            <div>
                                                 <Badge bg="primary" className="px-3 py-2 fs-6">
                                                     {minigame.score}
-                                                </Badge>
-                                            </div>
-                                            <div>
-                                                <Badge 
-                                                    bg={getDifficultyVariant(minigame.score)} 
-                                                    className="px-2 py-1"
-                                                >
-                                                    {getDifficulty(minigame.score)} Mode
                                                 </Badge>
                                             </div>
                                         </Card.Body>

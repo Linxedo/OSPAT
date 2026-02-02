@@ -91,29 +91,42 @@ const AnswersModal = ({ show, onHide, selectedResult, userAnswers, loading, mini
                 ) : userAnswers.length > 0 ? (
                     <div className="answers-list">
                         {userAnswers.map((answer, index) => (
-                            <Card key={index} className="mb-3 border-0 shadow-sm" style={{ background: 'var(--bg-secondary)' }}>
+                            <Card key={answer.questionId || index} className="mb-3 border-0 shadow-sm" style={{ background: 'var(--bg-secondary)' }}>
                                 <Card.Body className="p-3">
                                     <div className="d-flex justify-content-between align-items-start mb-2">
                                         <h6 className="mb-0 fw-bold" style={{ color: 'var(--text-primary)' }}>
                                             Question {index + 1}
                                         </h6>
-                                        <Badge bg={answer.is_correct ? 'success' : 'danger'} className="px-2 py-1">
-                                            {answer.is_correct ? 'Correct' : 'Incorrect'}
+                                        <Badge bg="primary" className="px-2 py-1">
+                                            ID: {answer.questionId}
                                         </Badge>
                                     </div>
                                     <p className="mb-2" style={{ color: 'var(--text-secondary)' }}>
-                                        {answer.question_text}
+                                        {answer.questionText}
                                     </p>
-                                    <div className="d-flex justify-content-between align-items-center">
+                                    <div className="d-flex justify-content-between align-items-center mb-2">
                                         <div>
                                             <small className="text-muted d-block">User Answer:</small>
-                                            <span style={{ color: 'var(--text-primary)' }}>{answer.user_answer}</span>
-                                        </div>
-                                        <div className="text-end">
-                                            <small className="text-muted d-block">Score:</small>
-                                            <strong style={{ color: 'var(--accent-primary)' }}>{answer.score}</strong>
+                                            <span style={{ color: 'var(--text-primary)' }}>{answer.userAnswer}</span>
                                         </div>
                                     </div>
+                                    {answer.possibleAnswers && answer.possibleAnswers.length > 0 && (
+                                        <div className="mt-3">
+                                            <small className="text-muted d-block mb-2">Possible Answers:</small>
+                                            <div className="d-flex flex-wrap gap-2">
+                                                {answer.possibleAnswers.map((option, optIndex) => (
+                                                    <Badge
+                                                        key={optIndex}
+                                                        bg={option.isUserAnswer ? 'success' : 'secondary'}
+                                                        className="px-2 py-1"
+                                                    >
+                                                        {option.answerText} ({option.score})
+                                                        {option.isUserAnswer && <i className="bi bi-check-circle-fill ms-1"></i>}
+                                                    </Badge>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
                                 </Card.Body>
                             </Card>
                         ))}
