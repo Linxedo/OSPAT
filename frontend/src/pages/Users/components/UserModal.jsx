@@ -10,6 +10,7 @@ const UserModal = ({ show, onHide, editingUser, onSubmit, loading }) => {
             if (editingUser) {
                 reset({
                     name: editingUser.name,
+                    employee_id: editingUser.employee_id,
                     role: editingUser.role,
                     password: ''
                 })
@@ -25,7 +26,19 @@ const UserModal = ({ show, onHide, editingUser, onSubmit, loading }) => {
     }, [show, editingUser, reset])
 
     const handleFormSubmit = (data) => {
-        onSubmit(data)
+        // Remove employee_id from data when editing (it shouldn't be sent in update requests)
+        if (editingUser) {
+            const { employee_id, password, ...submitData } = data;
+
+            // Only include password if it's not empty
+            const finalData = password && password.trim() !== ''
+                ? { ...submitData, password }
+                : submitData;
+
+            onSubmit(finalData);
+        } else {
+            onSubmit(data);
+        }
     }
 
     const userRole = watch('role')
@@ -104,7 +117,7 @@ const UserModal = ({ show, onHide, editingUser, onSubmit, loading }) => {
                             <Form.Control
                                 {...register('password', editingUser ? {} : { required: 'Password is required for admin users' })}
                                 type="password"
-                                placeholder="Enter password"
+                                placeholder="Minimum 6 characters or Numbers, letters, special characters"
                                 style={{
                                     backgroundColor: 'var(--bg-tertiary)',
                                     borderColor: 'var(--border-secondary)',
