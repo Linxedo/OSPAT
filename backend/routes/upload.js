@@ -3,7 +3,6 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
-const { csrfProtection } = require('../middleware/csrf');
 
 const router = express.Router();
 
@@ -43,7 +42,7 @@ const upload = multer({
 });
 
 // Upload image endpoint
-router.post('/image', authenticateToken, requireAdmin, csrfProtection, upload.single('image'), async (req, res) => {
+router.post('/image', authenticateToken, requireAdmin, upload.single('image'), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({
@@ -123,7 +122,7 @@ router.get('/images', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // Delete image endpoint
-router.delete('/image/:filename', authenticateToken, requireAdmin, csrfProtection, async (req, res) => {
+router.delete('/image/:filename', authenticateToken, requireAdmin, async (req, res) => {
     try {
         const { filename } = req.params;
         const filePath = path.join(uploadsDir, filename);

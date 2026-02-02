@@ -1,7 +1,6 @@
 const express = require('express');
 const { body } = require('express-validator');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
-const { csrfProtection } = require('../middleware/csrf');
 
 // Import controllers
 const dashboardController = require('../controllers/admin/dashboardController');
@@ -19,7 +18,7 @@ router.use(authenticateToken);
 router.use(requireAdmin);
 
 // API Routes Admin
-router.post('/sync-users', csrfProtection, syncUsersController.syncUsers);
+router.post('/sync-users', syncUsersController.syncUsers);
 router.get('/dashboard', dashboardController.getDashboard);
 router.get('/users', usersController.getUsers);
 router.get('/settings', settingsController.getSettings);
@@ -27,10 +26,10 @@ router.get('/settings/stream', settingsController.streamSettings); //Sync Antara
 router.get('/questions', questionsController.getQuestions);
 router.get('/history', historyController.getHistory);
 router.get('/user_answers/:resultId', userAnswersController.getUserAnswers);
-router.delete('/questions/:id', csrfProtection, questionsController.deleteQuestion);
-router.delete('/users/:id', csrfProtection, usersController.deleteUser);
+router.delete('/questions/:id', questionsController.deleteQuestion);
+router.delete('/users/:id', usersController.deleteUser);
 
-router.post('/users', csrfProtection, [
+router.post('/users', [
     body('name').notEmpty().withMessage('Name is required'),
     body('employee_id').notEmpty().withMessage('Employee ID is required'),
     body('role').isIn(['admin', 'user']).withMessage('Invalid role'),
@@ -42,7 +41,7 @@ router.post('/users', csrfProtection, [
     })
 ], usersController.createUser);
 
-router.put('/users/:id', csrfProtection, [
+router.put('/users/:id', [
     body('name').notEmpty().withMessage('Name is required'),
     body('role').isIn(['admin', 'user']).withMessage('Invalid role'),
     body('password').optional().custom((value, { req }) => {
@@ -53,7 +52,7 @@ router.put('/users/:id', csrfProtection, [
     })
 ], usersController.updateUser);
 
-router.post('/settings', csrfProtection, [
+router.post('/settings', [
     body('minimum_passing_score').optional().isInt({ min: 0, max: 10000 }),
     body('hard_mode_threshold').optional().isInt({ min: 0, max: 10000 }),
     body('minigame_enabled').optional().isBoolean(),
@@ -75,12 +74,12 @@ router.post('/settings', csrfProtection, [
     body('mg5_time_hard').optional().isInt({ min: 250, max: 5000 })
 ], settingsController.updateSettings);
 
-router.post('/questions', csrfProtection, [
+router.post('/questions', [
     body('question_text').notEmpty().withMessage('Question text is required'),
     body('answers').isArray().withMessage('Answers array is required')
 ], questionsController.createQuestion);
 
-router.put('/questions/:id', csrfProtection, [
+router.put('/questions/:id', [
     body('question_text').notEmpty().withMessage('Question text is required'),
     body('answers').isArray().withMessage('Answers array is required')
 ], questionsController.updateQuestion);

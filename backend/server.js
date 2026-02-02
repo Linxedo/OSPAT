@@ -10,7 +10,6 @@ const authRoutes = require('./routes/auth');
 const adminRoutes = require('./routes/admin');
 const androidRoutes = require('./routes/android');
 const uploadRoutes = require('./routes/upload');
-const { csrfProtection } = require('./middleware/csrf');
 
 const app = express();
 const isProd = process.env.NODE_ENV === 'production';
@@ -90,9 +89,6 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// CSRF token endpoint
-app.get('/api/csrf-token', require('./middleware/auth').authenticateToken, require('./middleware/csrf').getCSRFToken);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
