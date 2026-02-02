@@ -1,0 +1,25 @@
+/* Modal Styles */
+.modal-content {
+    border: 1px solid var(--border-primary);
+    border-radius: var(--radius-xl);
+    background: var(--bg-card);
+    box-shadow: var(--shadow-xl);
+    color: var(--text-primary);
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--border-primary);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
+    background: var(--gradient-card);
+}
+
+.modal-footer {
+    border-top: 1px solid var(--border-primary);
+    border-radius: 0 0 var(--radius-xl) var(--radius-xl) !important;
+    background: var(--gradient-card);
+}
+
+.modal-title {
+    color: var(--text-primary);
+    font-weight: 700;
+}

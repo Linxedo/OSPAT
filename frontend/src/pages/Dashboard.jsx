@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from 'react-query'
 import { Container, Row, Col, Card, Spinner, Alert, Button } from 'react-bootstrap'
 import { useNavigate } from 'react-router-dom'
 import { adminService } from '../services/adminService'
-import '../styles/dashboard.css'
+import '../styles/layouts/dashboard.css'
 
 const Dashboard = () => {
     const navigate = useNavigate()

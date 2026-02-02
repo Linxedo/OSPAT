@@ -1,0 +1,21 @@
+/* User Avatar Small */
+.user-avatar-small {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+}
+
+/* Activity Dot */
+.activity-dot {
+    width: 10px;
+    height: 10px;
+    flex-shrink: 0;
+    border-radius: var(--radius-full);
+}

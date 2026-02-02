@@ -1,0 +1,23 @@
+/* Dark Elegant Theme - Main Import File */
+/* This file imports all CSS components for the dark elegant theme */
+
+/* Import Base Styles */
+@import '../base/variables.css';
+@import '../base/reset.css';
+
+/* Import Layout Styles */
+@import '../layouts/app.css';
+@import '../layouts/sidebar.css';
+@import '../layouts/dashboard.css';
+
+/* Import Component Styles */
+@import '../components/cards.css';
+@import '../components/tables.css';
+@import '../components/buttons.css';
+@import '../components/forms.css';
+@import '../components/badges.css';
+@import '../components/modals.css';
+@import '../components/alerts.css';
+@import '../components/spinners.css';
+@import '../components/avatars.css';
+@import '../components/activity.css';

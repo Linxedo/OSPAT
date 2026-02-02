@@ -28,7 +28,7 @@ export const adminService = {
     },
 
     syncUsers: async () => {
-        const response = await api.post('/admin/users/sync-users')
+        const response = await api.post('/admin/sync-users')
         return response.data
     },
 

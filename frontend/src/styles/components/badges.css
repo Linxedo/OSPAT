@@ -1,0 +1,54 @@
+/* Badge Styles */
+.badge {
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 12px;
+}
+
+/* Badge Improvements */
+.badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-md);
+    letter-spacing: 0.3px;
+    transition: all var(--transition-normal);
+}
+
+.badge:hover {
+    transform: scale(1.05);
+}
+
+/* Badge Styles for Activity */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+}
+
+/* Background Colors */
+.bg-success {
+    background-color: var(--success) !important;
+}
+
+.bg-warning {
+    background-color: var(--warning) !important;
+}
+
+.bg-danger {
+    background-color: var(--danger) !important;
+}
+
+.bg-primary {
+    background-color: var(--accent-primary) !important;
+}
+
+.bg-opacity-10 {
+    background-color: rgba(74, 158, 255, 0.1) !important;
+}
+
+.text-primary {
+    color: var(--accent-primary) !important;
+}

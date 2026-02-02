@@ -1,0 +1,174 @@
+/* Table Styles - FIXED DARK THEME */
+.table {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background: var(--bg-card) !important;
+    border: 1px solid var(--border-primary);
+    margin-bottom: 0;
+    color: var(--text-primary) !important;
+}
+
+.table thead th {
+    background: var(--gradient-primary) !important;
+    color: white !important;
+    font-weight: 600;
+    border: none !important;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 0.5px;
+    padding: var(--spacing-md);
+}
+
+.table tbody tr {
+    transition: all var(--transition-fast);
+    border-bottom: 1px solid var(--border-primary) !important;
+    background: var(--bg-card) !important;
+}
+
+.table tbody tr:hover {
+    background: var(--bg-hover) !important;
+}
+
+.table tbody td {
+    border-color: var(--border-primary) !important;
+    vertical-align: middle;
+    padding: var(--spacing-md);
+    color: var(--text-primary) !important;
+    font-weight: 500;
+    background: transparent !important;
+}
+
+/* Override Bootstrap table colors */
+.table-striped>tbody>tr:nth-of-type(odd)>td,
+.table-striped>tbody>tr:nth-of-type(odd)>th {
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}
+
+.table-hover>tbody>tr:hover>td,
+.table-hover>tbody>tr:hover>th {
+    background-color: var(--bg-hover) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Force dark theme for all table elements */
+.table * {
+    background-color: transparent !important;
+    color: inherit !important;
+}
+
+/* Modern Table Styles */
+.table-modern {
+    background: transparent;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+.table-modern thead th {
+    background: var(--gradient-card);
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+    padding: var(--spacing-md) var(--spacing-lg);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.table-modern tbody tr {
+    transition: all var(--transition-fast);
+    border-bottom: 1px solid var(--border-primary);
+    background: transparent;
+}
+
+.table-modern tbody tr:hover {
+    background: var(--bg-hover);
+    transform: translateX(2px);
+}
+
+.table-modern tbody tr.table-row-hover:hover {
+    background: var(--bg-hover);
+    box-shadow: inset 3px 0 0 var(--accent-primary);
+}
+
+.table-modern tbody td {
+    border: none;
+    padding: var(--spacing-md) var(--spacing-lg);
+    vertical-align: middle;
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+.table-modern tbody td:first-child {
+    border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.table-modern tbody td:last-child {
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+/* Table Responsive Improvements */
+.table-responsive {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+}
+
+/* Loading State for Tables */
+.table-loading {
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+/* Empty State for Tables */
+.table-empty {
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: var(--spacing-2xl);
+}
+
+.table-empty i {
+    font-size: 3rem;
+    color: var(--text-muted);
+    margin-bottom: var(--spacing-md);
+}
+
+.table-empty h6 {
+    color: var(--text-muted);
+    margin-bottom: var(--spacing-sm);
+}
+
+.table-empty small {
+    color: var(--text-muted);
+}
+
+/* Responsive Table */
+@media (max-width: 768px) {
+    .table-modern thead th {
+        font-size: 0.75rem;
+        padding: var(--spacing-sm);
+    }
+
+    .table-modern tbody td {
+        padding: var(--spacing-sm);
+        font-size: 0.875rem;
+    }
+
+    .action-btn {
+        width: 28px;
+        height: 28px;
+    }
+
+    .badge {
+        font-size: 0.7rem;
+        padding: 0.35rem 0.5rem;
+    }
+}
