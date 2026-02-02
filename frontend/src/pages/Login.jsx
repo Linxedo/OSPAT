@@ -44,9 +44,9 @@ const Login = () => {
                                             src="/logo_sma.png"
                                             alt="OSPAT Logo"
                                             style={{
-                                                width: '350px',
+                                                width: '300px',
                                                 height: 'auto',
-                                                maxHeight: '350px',
+                                                maxHeight: '300px',
                                                 objectFit: 'contain'
                                             }}
                                         />
