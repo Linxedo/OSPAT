@@ -15,14 +15,24 @@ const MinigameSettings = ({ settings, onSubmit, loading }) => {
         onSubmit(data)
     }
 
+    // Generate speed levels (1-10 where 1=2500ms, 10=250ms)
+    const speedLevels = Array.from({ length: 10 }, (_, i) => {
+        const level = i + 1
+        const speed = 2500 - (level - 1) * 250
+        return {
+            value: speed,
+            label: `Level ${level} (${speed}ms)`
+        }
+    })
+
     const minigames = [
         {
             key: 'mg1',
             name: 'Minigame 1 - Reaction Speed',
             fields: [
                 { key: 'enabled', label: 'Enable', type: 'switch', col: 4 },
-                { key: 'speed_normal', label: 'Normal (ms)', type: 'number', col: 4 },
-                { key: 'speed_hard', label: 'Hard (ms)', type: 'number', col: 4 }
+                { key: 'speed_normal', label: 'Normal Speed', type: 'select', col: 4 },
+                { key: 'speed_hard', label: 'Hard Speed', type: 'select', col: 4 }
             ]
         },
         {
@@ -30,8 +40,8 @@ const MinigameSettings = ({ settings, onSubmit, loading }) => {
             name: 'Minigame 2 - Color Matching',
             fields: [
                 { key: 'enabled', label: 'Enable', type: 'switch', col: 4 },
-                { key: 'speed_normal', label: 'Normal (ms)', type: 'number', col: 4 },
-                { key: 'speed_hard', label: 'Hard (ms)', type: 'number', col: 4 }
+                { key: 'speed_normal', label: 'Normal Speed', type: 'select', col: 4 },
+                { key: 'speed_hard', label: 'Hard Speed', type: 'select', col: 4 }
             ]
         },
         {
@@ -40,8 +50,8 @@ const MinigameSettings = ({ settings, onSubmit, loading }) => {
             fields: [
                 { key: 'enabled', label: 'Enable', type: 'switch', col: 3 },
                 { key: 'rounds', label: 'Rounds', type: 'number', col: 3 },
-                { key: 'time_normal', label: 'Normal (ms)', type: 'number', col: 3 },
-                { key: 'time_hard', label: 'Hard (ms)', type: 'number', col: 3 }
+                { key: 'time_normal', label: 'Normal Speed', type: 'select', col: 3 },
+                { key: 'time_hard', label: 'Hard Speed', type: 'select', col: 3 }
             ]
         },
         {
@@ -49,8 +59,8 @@ const MinigameSettings = ({ settings, onSubmit, loading }) => {
             name: 'Minigame 4 - Rhythm Game OSU',
             fields: [
                 { key: 'enabled', label: 'Enable', type: 'switch', col: 4 },
-                { key: 'time_normal', label: 'Normal (ms)', type: 'number', col: 4 },
-                { key: 'time_hard', label: 'Hard (ms)', type: 'number', col: 4 }
+                { key: 'time_normal', label: 'Normal Speed', type: 'select', col: 4 },
+                { key: 'time_hard', label: 'Hard Speed', type: 'select', col: 4 }
             ]
         },
         {
@@ -58,8 +68,8 @@ const MinigameSettings = ({ settings, onSubmit, loading }) => {
             name: 'Minigame 5 - Shape Game',
             fields: [
                 { key: 'enabled', label: 'Enable', type: 'switch', col: 4 },
-                { key: 'time_normal', label: 'Normal (ms)', type: 'number', col: 4 },
-                { key: 'time_hard', label: 'Hard (ms)', type: 'number', col: 4 }
+                { key: 'time_normal', label: 'Normal Speed', type: 'select', col: 4 },
+                { key: 'time_hard', label: 'Hard Speed', type: 'select', col: 4 }
             ]
         }
     ]
@@ -81,6 +91,24 @@ const MinigameSettings = ({ settings, onSubmit, loading }) => {
                                                 {...settingsForm.register(`${minigame.key}_${field.key}`)}
                                                 style={{ color: 'var(--text-primary)' }}
                                             />
+                                        ) : field.type === 'select' ? (
+                                            <Form.Group>
+                                                <Form.Label style={{ color: 'var(--text-primary)' }}>{field.label}</Form.Label>
+                                                <Form.Select
+                                                    {...settingsForm.register(`${minigame.key}_${field.key}`, { valueAsNumber: true })}
+                                                    style={{
+                                                        backgroundColor: 'var(--bg-tertiary)',
+                                                        borderColor: 'var(--border-secondary)',
+                                                        color: 'var(--text-primary)'
+                                                    }}
+                                                >
+                                                    {speedLevels.map((level) => (
+                                                        <option key={level.value} value={level.value}>
+                                                            {level.label}
+                                                        </option>
+                                                    ))}
+                                                </Form.Select>
+                                            </Form.Group>
                                         ) : (
                                             <Form.Group>
                                                 <Form.Label style={{ color: 'var(--text-primary)' }}>{field.label}</Form.Label>
@@ -101,8 +129,8 @@ const MinigameSettings = ({ settings, onSubmit, loading }) => {
                         </div>
                     ))}
 
-                    <Button 
-                        type="submit" 
+                    <Button
+                        type="submit"
                         disabled={loading}
                         style={{
                             backgroundColor: 'var(--accent-primary)',
