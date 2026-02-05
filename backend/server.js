@@ -16,46 +16,50 @@ const isProd = process.env.NODE_ENV === 'production';
 
 // Global settings clients for SSE
 global.settingsClients = new Map();
+global.androidClients = new Map();
 
 // Make broadcast function globally available
 const pool = require('./models/db');
+const { getCachedSettings } = require('./utils/cache');
+const { toAndroidSettings } = require('./controllers/android/settingsController');
+
 global.broadcastSettingsUpdate = async () => {
-    if (!global.settingsClients || global.settingsClients.size === 0) {
-        return;
-    }
-
     try {
-        const result = await pool.query("SELECT setting_key, setting_value FROM app_settings");
-        const settings = result.rows.reduce((acc, row) => {
-            const key = row.setting_key;
-            const value = row.setting_value;
+        const settings = await getCachedSettings();
+        const androidSettings = toAndroidSettings(settings);
 
-            // Parse boolean and numeric values (keep snake_case for Android compatibility)
-            if (value === 'true') {
-                acc[key] = true;
-            } else if (value === 'false') {
-                acc[key] = false;
-            } else if (!isNaN(value) && value !== '') {
-                acc[key] = parseFloat(value);
-            } else {
-                acc[key] = value;
-            }
-            return acc;
-        }, {});
+        // Send to Web clients (original format)
+        if (global.settingsClients && global.settingsClients.size > 0) {
+            const webMessage = JSON.stringify({ type: 'settings_update', data: settings });
 
-        const message = JSON.stringify({ type: 'settings_update', data: settings });
-
-        // Send to all connected clients
-        for (const [clientId, clientRes] of global.settingsClients) {
-            try {
-                clientRes.write(`data: ${message}\n\n`);
-            } catch (error) {
-                console.error(`Failed to send update to client ${clientId}:`, error);
-                global.settingsClients.delete(clientId);
+            for (const [clientId, clientRes] of global.settingsClients) {
+                try {
+                    clientRes.write(`data: ${webMessage}\n\n`);
+                    console.log(` [SERVER] Broadcasted Web settings to client ${clientId}`);
+                } catch (error) {
+                    console.error(`Failed to send update to Web client ${clientId}:`, error);
+                    global.settingsClients.delete(clientId);
+                }
             }
         }
 
-        console.log(`📡 [SERVER] Broadcasted settings update to ${global.settingsClients.size} clients`);
+        // Send to Android clients (Android format)
+        if (global.androidClients && global.androidClients.size > 0) {
+            const androidMessage = JSON.stringify({ type: 'settings_update', data: androidSettings });
+
+            for (const [clientId, clientRes] of global.androidClients) {
+                try {
+                    clientRes.write(`data: ${androidMessage}\n\n`);
+                    console.log(` [SERVER] Broadcasted Android settings to client ${clientId}`);
+                } catch (error) {
+                    console.error(`Failed to send update to Android client ${clientId}:`, error);
+                    global.androidClients.delete(clientId);
+                }
+            }
+        }
+
+        const totalClients = (global.settingsClients?.size || 0) + (global.androidClients?.size || 0);
+        console.log(` [SERVER] Broadcasted settings update to ${totalClients} total clients`);
     } catch (error) {
         console.error('Error broadcasting settings update:', error);
     }

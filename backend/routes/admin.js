@@ -1,6 +1,7 @@
 const express = require('express');
 const { body } = require('express-validator');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const debugLogger = require('../middleware/debugLogger');
 
 // Import controllers
 const dashboardController = require('../controllers/admin/dashboardController');
@@ -52,7 +53,7 @@ router.put('/users/:id', [
     })
 ], usersController.updateUser);
 
-router.post('/settings', [
+router.post('/settings', debugLogger, [
     body('minimum_passing_score').optional().isInt({ min: 0, max: 10000 }),
     body('hard_mode_threshold').optional().isInt({ min: 0, max: 10000 }),
     body('minigame_enabled').optional().isBoolean(),

@@ -1,4 +1,5 @@
 const pool = require('../../models/db');
+const { getCachedSettings, invalidateCache, CACHE_KEYS } = require('../../utils/cache');
 
 // Helper to normalize Android naming to backend naming
 const normalizeSettings = (settings) => {
@@ -17,6 +18,7 @@ const normalizeSettings = (settings) => {
         'minigame1_speed_hard': 'mg1_speed_hard',
         'minigame2_speed_normal': 'mg2_speed_normal',
         'minigame2_speed_hard': 'mg2_speed_hard',
+        'minigame2_rounds': 'minigame2_rounds',
         'minigame3_rounds': 'mg3_rounds',
         'minigame3_time_normal': 'mg3_time_normal',
         'minigame3_time_hard': 'mg3_time_hard',
@@ -52,6 +54,7 @@ const toAndroidSettings = (settings) => {
         'mg1_speed_hard': 'minigame1_speed_hard',
         'mg2_speed_normal': 'minigame2_speed_normal',
         'mg2_speed_hard': 'minigame2_speed_hard',
+        'minigame2_rounds': 'minigame2_rounds',
         'mg3_rounds': 'minigame3_rounds',
         'mg3_time_normal': 'minigame3_time_normal',
         'mg3_time_hard': 'minigame3_time_hard',
@@ -99,53 +102,23 @@ async function saveAppSettings(settings) {
 
 exports.getSettings = async (req, res) => {
     try {
-        const result = await pool.query("SELECT setting_key, setting_value FROM app_settings");
+        console.log('📥 Android Settings GET received (cached)');
 
-        if (result.rows.length === 0) {
-            return res.json({
-                success: true,
-                message: "Using defaults",
-                data: {
-                    minimum_passing_score: 1500,
-                    hard_mode_threshold: 400,
-                    minigame_enabled: true,
-                    mg1_enabled: true,
-                    mg1_speed_normal: 2500,
-                    mg1_speed_hard: 1000,
-                    mg2_enabled: true,
-                    mg2_speed_normal: 2500,
-                    mg2_speed_hard: 1500,
-                    mg3_enabled: true,
-                    mg3_rounds: 5,
-                    mg3_time_normal: 3000,
-                    mg3_time_hard: 2500,
-                    mg4_enabled: true,
-                    mg4_time_normal: 3000,
-                    mg4_time_hard: 2000,
-                    mg5_enabled: true,
-                    mg5_time_normal: 3000,
-                    mg5_time_hard: 2000
-                }
-            });
-        }
+        const settings = await getCachedSettings();
 
-        // Parse settings
-        const settings = result.rows.reduce((acc, row) => {
-            let val = row.setting_value;
-            if (val === 'true') val = true;
-            else if (val === 'false') val = false;
-            else if (!isNaN(val)) val = parseFloat(val);
-            acc[row.setting_key] = val;
-            return acc;
-        }, {});
-
-        // Convert to Android naming
+        // Use the proper conversion function
         const androidSettings = toAndroidSettings(settings);
 
-        res.json({ success: true, data: androidSettings });
-    } catch (err) {
-        console.error("Error loading settings:", err);
-        res.status(500).json({ success: false, message: "Error loading settings" });
+        console.log('📱 Android settings sent:', Object.keys(androidSettings));
+
+        res.json({
+            success: true,
+            message: "Settings loaded successfully",
+            data: androidSettings
+        });
+    } catch (error) {
+        console.error('Android Settings fetch error:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 };
 
@@ -155,6 +128,9 @@ exports.updateSettings = async (req, res) => {
         const processedSettings = normalizeSettings(req.body);
 
         await saveAppSettings(processedSettings);
+
+        // Invalidate cache to force refresh on next request
+        invalidateCache(CACHE_KEYS.SETTINGS);
 
         // Broadcast updates if function exists
         if (typeof global.broadcastSettingsUpdate === 'function') {
@@ -169,22 +145,48 @@ exports.updateSettings = async (req, res) => {
 };
 
 exports.streamSettings = async (req, res) => {
-    res.writeHead(200, {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive'
-    });
+    try {
+        console.log('📡 Android SSE client connected');
 
-    const clientId = Date.now();
-    if (!global.settingsClients) {
-        global.settingsClients = new Map();
+        res.writeHead(200, {
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': 'Cache-Control'
+        });
+
+        const clientId = Date.now() + '_' + Math.random();
+        if (!global.androidClients) {
+            global.androidClients = new Map();
+        }
+        global.androidClients.set(clientId, res);
+
+        console.log(`📡 Android SSE client ${clientId} added. Total Android clients: ${global.androidClients.size}`);
+
+        // Send initial settings to Android client
+        try {
+            const settings = await getCachedSettings();
+            const androidSettings = toAndroidSettings(settings);
+
+            res.write('data: ' + JSON.stringify({
+                type: 'settings_update',
+                data: androidSettings
+            }) + '\n\n');
+
+            console.log('📱 Initial settings sent to Android client');
+        } catch (error) {
+            console.error('Error sending initial settings to Android:', error);
+        }
+
+        req.on('close', () => {
+            console.log(`📡 Android SSE client ${clientId} disconnected`);
+            global.androidClients.delete(clientId);
+            console.log(`📡 Remaining Android clients: ${global.androidClients.size}`);
+        });
+
+    } catch (error) {
+        console.error('Android SSE setup error:', error);
+        res.status(500).json({ success: false, message: 'SSE setup failed' });
     }
-    global.settingsClients.set(clientId, res);
-
-    console.log(`SSE client ${clientId} connected`);
-
-    req.on('close', () => {
-        global.settingsClients.delete(clientId);
-        console.log(`SSE client ${clientId} disconnected`);
-    });
 };

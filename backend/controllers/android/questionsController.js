@@ -1,47 +1,26 @@
 const { body, validationResult } = require('express-validator');
 const pool = require('../../models/db');
+const { getCachedQuestions, invalidateCache, CACHE_KEYS } = require('../../utils/cache');
 
 exports.getQuestions = async (req, res) => {
     try {
-        console.log('Questions endpoint called');
+        console.log('📥 Android Questions GET received (cached)');
 
-        // Fix NULL is_active values
-        await pool.query("UPDATE questions SET is_active = true WHERE is_active IS NULL");
+        const questions = await getCachedQuestions();
 
-        const questionsResult = await pool.query(
-            "SELECT question_id, question_text FROM questions WHERE is_active = true ORDER BY question_id ASC"
-        );
-
-        if (questionsResult.rows.length === 0) {
-            console.log('No questions found');
-            return res.json({ success: true, message: "No questions available", data: [] });
-        }
-
-        const questionIds = questionsResult.rows.map(q => q.question_id);
-        const answersResult = await pool.query(
-            "SELECT question_id, answer_id, answer_text, score FROM question_answers WHERE question_id = ANY($1) ORDER BY answer_id ASC",
-            [questionIds]
-        );
-
-        // Group answers by question
-        const answersMap = answersResult.rows.reduce((acc, ans) => {
-            if (!acc[ans.question_id]) acc[ans.question_id] = [];
-            acc[ans.question_id].push({
-                id: ans.answer_id,
-                answer_text: ans.answer_text,
-                score: ans.score
-            });
-            return acc;
-        }, {});
-
-        const questions = questionsResult.rows.map(q => ({
+        // Convert to Android format
+        const androidQuestions = questions.map(q => ({
             id: q.question_id,
             question_text: q.question_text,
-            answers: answersMap[q.question_id] || []
+            answers: (q.answers || []).map(a => ({
+                id: a.answer_id,
+                answer_text: a.answer_text,
+                score: a.score
+            }))
         }));
 
-        console.log(`Sending ${questions.length} questions`);
-        res.json({ success: true, questions });
+        console.log(`Sending ${androidQuestions.length} questions from cache`);
+        res.json({ success: true, questions: androidQuestions });
     } catch (err) {
         console.error("Error fetching questions:", err);
         res.status(500).json({ success: false, message: "Server error fetching questions" });
@@ -79,6 +58,10 @@ exports.createQuestion = async (req, res) => {
             }
 
             await client.query('COMMIT');
+
+            // Invalidate cache to force refresh on next request
+            invalidateCache(CACHE_KEYS.QUESTIONS);
+
             res.json({ success: true, message: "Question created", questionId });
         } catch (error) {
             await client.query('ROLLBACK');
@@ -138,6 +121,10 @@ exports.updateQuestion = async (req, res) => {
             }
 
             await client.query('COMMIT');
+
+            // Invalidate cache to force refresh on next request
+            invalidateCache(CACHE_KEYS.QUESTIONS);
+
             res.json({ success: true, message: "Question updated successfully" });
         } catch (error) {
             await client.query('ROLLBACK');
@@ -174,6 +161,10 @@ exports.deleteQuestion = async (req, res) => {
             await client.query("UPDATE questions SET is_active = false WHERE question_id = $1", [id]);
 
             await client.query('COMMIT');
+
+            // Invalidate cache to force refresh on next request
+            invalidateCache(CACHE_KEYS.QUESTIONS);
+
             res.json({ success: true, message: "Question deleted successfully" });
         } catch (error) {
             await client.query('ROLLBACK');

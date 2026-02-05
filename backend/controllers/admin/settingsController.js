@@ -1,5 +1,6 @@
 const { body, validationResult } = require('express-validator');
 const pool = require('../../models/db');
+const { getCachedSettings, invalidateCache, CACHE_KEYS } = require('../../utils/cache');
 
 // Helper function to log activity
 const logActivity = async (pool, activityType, description, userId) => {
@@ -55,53 +56,11 @@ const upsertSetting = async (key, value) => {
 
 exports.getSettings = async (req, res) => {
     try {
-        console.log('📥 Settings GET received');
+        console.log('📥 Settings GET received (cached)');
 
-        const result = await pool.query("SELECT setting_key, setting_value FROM app_settings");
+        const settings = await getCachedSettings();
 
-        if (result.rows.length === 0) {
-            console.log("No settings found, returning defaults");
-            return res.json({
-                success: true,
-                message: "Settings loaded (using defaults)",
-                data: {
-                    minimum_passing_score: 70,
-                    hard_mode_threshold: 85,
-                    minigame_enabled: true,
-                    mg1_enabled: true,
-                    mg1_speed_normal: 2500,
-                    mg1_speed_hard: 1000,
-                    mg2_enabled: true,
-                    mg2_speed_normal: 2500,
-                    mg2_speed_hard: 1500,
-                    mg3_enabled: true,
-                    mg3_rounds: 5,
-                    mg3_time_normal: 3000,
-                    mg3_time_hard: 2000,
-                    mg4_enabled: true,
-                    mg4_time_normal: 3000,
-                    mg4_time_hard: 2000,
-                    mg5_enabled: true,
-                    mg5_time_normal: 3000,
-                    mg5_time_hard: 2000
-                }
-            });
-        }
-
-        const settings = result.rows.reduce((acc, row) => {
-            if (row.setting_value === 'true') {
-                acc[row.setting_key] = true;
-            } else if (row.setting_value === 'false') {
-                acc[row.setting_key] = false;
-            } else if (!isNaN(row.setting_value)) {
-                acc[row.setting_key] = parseFloat(row.setting_value);
-            } else {
-                acc[row.setting_key] = row.setting_value;
-            }
-            return acc;
-        }, {});
-
-        console.log("Settings loaded:", Object.keys(settings).length, "settings found");
+        console.log("Settings loaded from cache:", Object.keys(settings).length, "settings found");
 
         res.json({
             success: true,
@@ -160,33 +119,32 @@ exports.updateSettings = async (req, res) => {
             await global.broadcastSettingsUpdate();
         }
 
-        // Fetch fresh data from database
-        const result = await pool.query("SELECT * FROM app_settings");
-        const settings = result.rows.reduce((acc, row) => {
-            acc[row.setting_key] = row.setting_value;
-            return acc;
-        }, {});
+        // Invalidate cache to force refresh on next request
+        invalidateCache(CACHE_KEYS.SETTINGS);
+
+        // Get fresh settings from cache (will fetch from DB)
+        const settings = await getCachedSettings();
 
         const responseData = {
-            minimum_passing_score: parseInt(settings.minimum_passing_score) || 70,
-            hard_mode_threshold: parseInt(settings.hard_mode_threshold) || 85,
-            minigame_enabled: settings.minigame_enabled === 'true',
-            mg1_enabled: settings.mg1_enabled === 'true',
-            mg1_speed_normal: parseInt(settings.mg1_speed_normal) || 2500,
-            mg1_speed_hard: parseInt(settings.mg1_speed_hard) || 250,
-            mg2_enabled: settings.mg2_enabled === 'true',
-            mg2_speed_normal: parseInt(settings.mg2_speed_normal) || 2500,
-            mg2_speed_hard: parseInt(settings.mg2_speed_hard) || 250,
-            mg3_enabled: settings.mg3_enabled === 'true',
-            mg3_rounds: parseInt(settings.mg3_rounds) || 5,
-            mg3_time_normal: parseInt(settings.mg3_time_normal) || 3000,
-            mg3_time_hard: parseInt(settings.mg3_time_hard) || 2000,
-            mg4_enabled: settings.mg4_enabled === 'true',
-            mg4_time_normal: parseInt(settings.mg4_time_normal) || 3000,
-            mg4_time_hard: parseInt(settings.mg4_time_hard) || 2000,
-            mg5_enabled: settings.mg5_enabled === 'true',
-            mg5_time_normal: parseInt(settings.mg5_time_normal) || 3000,
-            mg5_time_hard: parseInt(settings.mg5_time_hard) || 2000
+            minimum_passing_score: settings.minimum_passing_score || 70,
+            hard_mode_threshold: settings.hard_mode_threshold || 85,
+            minigame_enabled: settings.minigame_enabled || false,
+            mg1_enabled: settings.mg1_enabled || false,
+            mg1_speed_normal: settings.mg1_speed_normal || 2500,
+            mg1_speed_hard: settings.mg1_speed_hard || 250,
+            mg2_enabled: settings.mg2_enabled || false,
+            mg2_speed_normal: settings.mg2_speed_normal || 2500,
+            mg2_speed_hard: settings.mg2_speed_hard || 250,
+            mg3_enabled: settings.mg3_enabled || false,
+            mg3_rounds: settings.mg3_rounds || 5,
+            mg3_time_normal: settings.mg3_time_normal || 3000,
+            mg3_time_hard: settings.mg3_time_hard || 2000,
+            mg4_enabled: settings.mg4_enabled || false,
+            mg4_time_normal: settings.mg4_time_normal || 3000,
+            mg4_time_hard: settings.mg4_time_hard || 2000,
+            mg5_enabled: settings.mg5_enabled || false,
+            mg5_time_normal: settings.mg5_time_normal || 3000,
+            mg5_time_hard: settings.mg5_time_hard || 2000
         };
 
         res.json({
@@ -230,19 +188,7 @@ exports.streamSettings = async (req, res) => {
         console.log(`📡 SSE client ${clientId} added. Total clients: ${global.settingsClients.size}`);
 
         try {
-            const result = await pool.query("SELECT setting_key, setting_value FROM app_settings");
-            const settings = result.rows.reduce((acc, row) => {
-                if (row.setting_value === 'true') {
-                    acc[row.setting_key] = true;
-                } else if (row.setting_value === 'false') {
-                    acc[row.setting_key] = false;
-                } else if (!isNaN(row.setting_value)) {
-                    acc[row.setting_key] = parseFloat(row.setting_value);
-                } else {
-                    acc[row.setting_key] = row.setting_value;
-                }
-                return acc;
-            }, {});
+            const settings = await getCachedSettings();
 
             res.write('data: ' + JSON.stringify({
                 type: 'settings_update',

@@ -1,5 +1,6 @@
 const { body, validationResult } = require('express-validator');
 const pool = require('../../models/db');
+const { getCachedQuestions, invalidateCache, CACHE_KEYS } = require('../../utils/cache');
 
 // Helper function to log activity
 const logActivity = async (pool, activityType, description, userId) => {
@@ -15,34 +16,9 @@ const logActivity = async (pool, activityType, description, userId) => {
 
 exports.getQuestions = async (req, res) => {
     try {
-        await pool.query("UPDATE questions SET is_active = true WHERE is_active IS NULL");
+        console.log('📥 Questions GET received (cached)');
 
-        const questionsResult = await pool.query("SELECT * FROM questions WHERE is_active = true ORDER BY question_id ASC");
-
-        if (questionsResult.rows.length === 0) {
-            return res.json({
-                success: true,
-                data: []
-            });
-        }
-
-        const questionIds = questionsResult.rows.map(q => q.question_id);
-
-        const answersResult = await pool.query(
-            "SELECT question_id, answer_id, answer_text, score FROM question_answers WHERE question_id = ANY($1) ORDER BY answer_id ASC",
-            [questionIds]
-        );
-
-        const answersMap = answersResult.rows.reduce((acc, ans) => {
-            if (!acc[ans.question_id]) acc[ans.question_id] = [];
-            acc[ans.question_id].push(ans);
-            return acc;
-        }, {});
-
-        const questions = questionsResult.rows.map(q => ({
-            ...q,
-            answers: answersMap[q.question_id] || []
-        }));
+        const questions = await getCachedQuestions();
 
         res.json({
             success: true,
@@ -90,6 +66,9 @@ exports.createQuestion = async (req, res) => {
         await pool.query('COMMIT');
 
         await logActivity(pool, 'question_created', `New question created: "${question_text}"`, req.user?.userId);
+
+        // Invalidate cache to force refresh on next request
+        invalidateCache(CACHE_KEYS.QUESTIONS);
 
         const answersResult = await pool.query(
             "SELECT answer_id, answer_text, score FROM question_answers WHERE question_id = $1 ORDER BY answer_id ASC",
@@ -150,6 +129,9 @@ exports.updateQuestion = async (req, res) => {
 
         await logActivity(pool, 'question_updated', `Question edited: "${question_text}"`, req.user?.userId);
 
+        // Invalidate cache to force refresh on next request
+        invalidateCache(CACHE_KEYS.QUESTIONS);
+
         const answersResult = await pool.query(
             "SELECT answer_id, answer_text, score FROM question_answers WHERE question_id = $1 ORDER BY answer_id ASC",
             [id]
@@ -181,6 +163,9 @@ exports.deleteQuestion = async (req, res) => {
         await pool.query("UPDATE questions SET is_active = false WHERE question_id = $1", [id]);
 
         await logActivity(pool, 'question_deleted', `Question deleted: "${questionText}"`, req.user?.userId);
+
+        // Invalidate cache to force refresh on next request
+        invalidateCache(CACHE_KEYS.QUESTIONS);
 
         res.json({
             success: true,
