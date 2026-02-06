@@ -33,7 +33,13 @@ const normalizeSettings = (settings) => {
         // Minigame 5
         mg5_enabled: settings.minigame5_enabled !== undefined ? settings.minigame5_enabled : settings.mg5_enabled,
         mg5_time_normal: settings.mg5_time_normal,
-        mg5_time_hard: settings.mg5_time_hard
+        mg5_time_hard: settings.mg5_time_hard,
+        // Scores
+        mg1_score_hit: settings.mg1_score_hit,
+        mg2_score_max: settings.mg2_score_max,
+        mg3_score_round: settings.mg3_score_round,
+        mg4_score_max: settings.mg4_score_max,
+        mg5_score_hit: settings.mg5_score_hit
     };
 
     return normalized;
@@ -71,7 +77,13 @@ const toAndroidSettings = (settings) => {
         // Minigame 5
         minigame5_enabled: settings.mg5_enabled,
         mg5_time_normal: settings.mg5_time_normal,
-        mg5_time_hard: settings.mg5_time_hard
+        mg5_time_hard: settings.mg5_time_hard,
+        // Scores
+        mg1_score_hit: parseInt(settings.mg1_score_hit) || 50,
+        mg2_score_max: parseInt(settings.mg2_score_max) || 1000,
+        mg3_score_round: parseInt(settings.mg3_score_round) || 200,
+        mg4_score_max: parseInt(settings.mg4_score_max) || 100,
+        mg5_score_hit: parseInt(settings.mg5_score_hit) || 50
     };
 
     return android;

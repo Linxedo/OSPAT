@@ -57,43 +57,50 @@ const getCachedSettings = async () => {
     return withCache(settingsCache, CACHE_KEYS.SETTINGS, async () => {
         const result = await pool.query("SELECT setting_key, setting_value FROM app_settings");
 
-        if (result.rows.length === 0) {
-            return {
-                minimum_passing_score: 70,
-                hard_mode_threshold: 85,
-                minigame_enabled: true,
-                mg1_enabled: true,
-                mg1_speed_normal: 2500,
-                mg1_speed_hard: 1000,
-                mg2_enabled: true,
-                mg2_rounds: 3,
-                mg2_speed_normal: 2500,
-                mg2_speed_hard: 1500,
-                mg3_enabled: true,
-                mg3_rounds: 5,
-                mg3_time_normal: 3000,
-                mg3_time_hard: 2000,
-                mg4_enabled: true,
-                mg4_time_normal: 3000,
-                mg4_time_hard: 2000,
-                mg5_enabled: true,
-                mg5_time_normal: 3000,
-                mg5_time_hard: 2000
-            };
-        }
+        const defaultSettings = {
+            minimum_passing_score: 70,
+            hard_mode_threshold: 85,
+            minigame_enabled: true,
+            mg1_enabled: true,
+            mg1_speed_normal: 2500,
+            mg1_speed_hard: 1000,
+            mg1_score_hit: 50,
+            mg2_enabled: true,
+            mg2_rounds: 3,
+            mg2_speed_normal: 2500,
+            mg2_speed_hard: 1500,
+            mg2_score_max: 1000,
+            mg3_enabled: true,
+            mg3_rounds: 5,
+            mg3_time_normal: 3000,
+            mg3_time_hard: 2000,
+            mg3_score_round: 200,
+            mg4_enabled: true,
+            mg4_time_normal: 3000,
+            mg4_time_hard: 2000,
+            mg4_score_max: 100,
+            mg5_enabled: true,
+            mg5_time_normal: 3000,
+            mg5_time_hard: 2000,
+            mg5_score_hit: 50
+        };
 
-        return result.rows.reduce((acc, row) => {
+        const dbSettings = result.rows.reduce((acc, row) => {
+            let val;
             if (row.setting_value === 'true') {
-                acc[row.setting_key] = true;
+                val = true;
             } else if (row.setting_value === 'false') {
-                acc[row.setting_key] = false;
-            } else if (!isNaN(row.setting_value)) {
-                acc[row.setting_key] = parseFloat(row.setting_value);
+                val = false;
+            } else if (!isNaN(row.setting_value) && row.setting_value !== '') {
+                val = parseFloat(row.setting_value);
             } else {
-                acc[row.setting_key] = row.setting_value;
+                val = row.setting_value;
             }
+            acc[row.setting_key] = val;
             return acc;
         }, {});
+
+        return { ...defaultSettings, ...dbSettings };
     });
 };
 

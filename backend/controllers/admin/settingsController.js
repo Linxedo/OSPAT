@@ -62,10 +62,19 @@ exports.getSettings = async (req, res) => {
 
         console.log("Settings loaded from cache:", Object.keys(settings).length, "settings found");
 
+        const responseData = {
+            ...settings,
+            mg1_score_hit: parseInt(settings.mg1_score_hit) || 50,
+            mg2_score_max: parseInt(settings.mg2_score_max) || 1000,
+            mg3_score_round: parseInt(settings.mg3_score_round) || 200,
+            mg4_score_max: parseInt(settings.mg4_score_max) || 100,
+            mg5_score_hit: parseInt(settings.mg5_score_hit) || 50
+        };
+
         res.json({
             success: true,
             message: "Settings loaded successfully",
-            data: settings
+            data: responseData
         });
     } catch (error) {
         console.error('Settings fetch error:', error);
@@ -128,7 +137,13 @@ exports.updateSettings = async (req, res) => {
             // Minigame 5
             mg5_enabled: req.body.mg5_enabled,
             mg5_time_normal: req.body.mg5_time_normal,
-            mg5_time_hard: req.body.mg5_time_hard
+            mg5_time_hard: req.body.mg5_time_hard,
+            // Minigame Scores
+            mg1_score_hit: req.body.mg1_score_hit,
+            mg2_score_max: req.body.mg2_score_max,
+            mg3_score_round: req.body.mg3_score_round,
+            mg4_score_max: req.body.mg4_score_max,
+            mg5_score_hit: req.body.mg5_score_hit
         };
 
         for (const [key, value] of Object.entries(settingsToUpdate)) {
@@ -172,7 +187,12 @@ exports.updateSettings = async (req, res) => {
             mg4_time_hard: settings.mg4_time_hard ?? 2000,
             mg5_enabled: settings.mg5_enabled ?? false,
             mg5_time_normal: settings.mg5_time_normal ?? 3000,
-            mg5_time_hard: settings.mg5_time_hard ?? 2000
+            mg5_time_hard: settings.mg5_time_hard ?? 2000,
+            mg1_score_hit: parseInt(settings.mg1_score_hit) || 50,
+            mg2_score_max: parseInt(settings.mg2_score_max) || 1000,
+            mg3_score_round: parseInt(settings.mg3_score_round) || 200,
+            mg4_score_max: parseInt(settings.mg4_score_max) || 100,
+            mg5_score_hit: parseInt(settings.mg5_score_hit) || 50
         };
 
         res.json({

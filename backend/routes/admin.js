@@ -73,7 +73,12 @@ router.post('/settings', debugLogger, [
     body('mg4_time_hard').optional().isInt({ min: 250, max: 5000 }),
     body('mg5_enabled').optional().isBoolean(),
     body('mg5_time_normal').optional().isInt({ min: 250, max: 10000 }),
-    body('mg5_time_hard').optional().isInt({ min: 250, max: 5000 })
+    body('mg5_time_hard').optional().isInt({ min: 250, max: 5000 }),
+    body('mg1_score_hit').optional().isInt({ min: 1, max: 10000 }),
+    body('mg2_score_max').optional().isInt({ min: 1, max: 100000 }),
+    body('mg3_score_round').optional().isInt({ min: 1, max: 10000 }),
+    body('mg4_score_max').optional().isInt({ min: 1, max: 10000 }),
+    body('mg5_score_hit').optional().isInt({ min: 1, max: 10000 })
 ], settingsController.updateSettings);
 
 router.post('/questions', [
