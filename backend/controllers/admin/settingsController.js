@@ -101,50 +101,78 @@ exports.updateSettings = async (req, res) => {
             }
         }
 
+        // Explicitly map every field to be 1000% sure nothing is missed
         const updatePromises = [];
+        const settingsToUpdate = {
+            minimum_passing_score: req.body.minimum_passing_score,
+            hard_mode_threshold: req.body.hard_mode_threshold,
+            minigame_enabled: req.body.minigame_enabled,
+            // Minigame 1
+            mg1_enabled: req.body.mg1_enabled,
+            mg1_speed_normal: req.body.mg1_speed_normal,
+            mg1_speed_hard: req.body.mg1_speed_hard,
+            // Minigame 2
+            mg2_enabled: req.body.mg2_enabled,
+            mg2_rounds: req.body.mg2_rounds,
+            mg2_speed_normal: req.body.mg2_speed_normal,
+            mg2_speed_hard: req.body.mg2_speed_hard,
+            // Minigame 3
+            mg3_enabled: req.body.mg3_enabled,
+            mg3_rounds: req.body.mg3_rounds,
+            mg3_time_normal: req.body.mg3_time_normal,
+            mg3_time_hard: req.body.mg3_time_hard,
+            // Minigame 4
+            mg4_enabled: req.body.mg4_enabled,
+            mg4_time_normal: req.body.mg4_time_normal,
+            mg4_time_hard: req.body.mg4_time_hard,
+            // Minigame 5
+            mg5_enabled: req.body.mg5_enabled,
+            mg5_time_normal: req.body.mg5_time_normal,
+            mg5_time_hard: req.body.mg5_time_hard
+        };
 
-        // Update all settings that are provided
-        for (const [key, value] of Object.entries(req.body)) {
-            if (value !== undefined) {
+        for (const [key, value] of Object.entries(settingsToUpdate)) {
+            if (value !== undefined && value !== null) {
                 updatePromises.push(upsertSetting(key, value));
             }
         }
 
-        console.log(`🔄 Executing ${updatePromises.length} upsert operations...`);
+        console.log(`🔄 Executing ${updatePromises.length} explicit upsert operations...`);
         await Promise.all(updatePromises);
-        console.log('✅ All updates completed successfully');
+        console.log('✅ All explicit updates completed successfully');
 
-        // Broadcast real-time updates to all connected admin clients
+        // Invalidate cache to force refresh
+        invalidateCache(CACHE_KEYS.SETTINGS);
+
+        // Get fresh settings from cache (will fetch from DB now that cache is invalidated)
+        const settings = await getCachedSettings();
+
+        // Broadcast real-time updates to all connected admin and android clients
         if (typeof global.broadcastSettingsUpdate === 'function') {
             await global.broadcastSettingsUpdate();
         }
 
-        // Invalidate cache to force refresh on next request
-        invalidateCache(CACHE_KEYS.SETTINGS);
-
-        // Get fresh settings from cache (will fetch from DB)
-        const settings = await getCachedSettings();
-
         const responseData = {
-            minimum_passing_score: settings.minimum_passing_score || 70,
-            hard_mode_threshold: settings.hard_mode_threshold || 85,
-            minigame_enabled: settings.minigame_enabled || false,
-            mg1_enabled: settings.mg1_enabled || false,
-            mg1_speed_normal: settings.mg1_speed_normal || 2500,
-            mg1_speed_hard: settings.mg1_speed_hard || 250,
-            mg2_enabled: settings.mg2_enabled || false,
-            mg2_speed_normal: settings.mg2_speed_normal || 2500,
-            mg2_speed_hard: settings.mg2_speed_hard || 250,
-            mg3_enabled: settings.mg3_enabled || false,
-            mg3_rounds: settings.mg3_rounds || 5,
-            mg3_time_normal: settings.mg3_time_normal || 3000,
-            mg3_time_hard: settings.mg3_time_hard || 2000,
-            mg4_enabled: settings.mg4_enabled || false,
-            mg4_time_normal: settings.mg4_time_normal || 3000,
-            mg4_time_hard: settings.mg4_time_hard || 2000,
-            mg5_enabled: settings.mg5_enabled || false,
-            mg5_time_normal: settings.mg5_time_normal || 3000,
-            mg5_time_hard: settings.mg5_time_hard || 2000
+            minimum_passing_score: settings.minimum_passing_score ?? 70,
+            hard_mode_threshold: settings.hard_mode_threshold ?? 85,
+            minigame_enabled: settings.minigame_enabled ?? false,
+            mg1_enabled: settings.mg1_enabled ?? false,
+            mg1_speed_normal: settings.mg1_speed_normal ?? 2500,
+            mg1_speed_hard: settings.mg1_speed_hard ?? 250,
+            mg2_enabled: settings.mg2_enabled ?? false,
+            mg2_rounds: settings.mg2_rounds ?? 3,
+            mg2_speed_normal: settings.mg2_speed_normal ?? 2500,
+            mg2_speed_hard: settings.mg2_speed_hard ?? 250,
+            mg3_enabled: settings.mg3_enabled ?? false,
+            mg3_rounds: settings.mg3_rounds ?? 5,
+            mg3_time_normal: settings.mg3_time_normal ?? 3000,
+            mg3_time_hard: settings.mg3_time_hard ?? 2000,
+            mg4_enabled: settings.mg4_enabled ?? false,
+            mg4_time_normal: settings.mg4_time_normal ?? 3000,
+            mg4_time_hard: settings.mg4_time_hard ?? 2000,
+            mg5_enabled: settings.mg5_enabled ?? false,
+            mg5_time_normal: settings.mg5_time_normal ?? 3000,
+            mg5_time_hard: settings.mg5_time_hard ?? 2000
         };
 
         res.json({

@@ -42,13 +42,13 @@ const invalidateCache = (pattern) => {
         dashboardCache.keys(),
         questionsCache.keys()
     ).filter(key => key.includes(pattern));
-    
+
     keys.forEach(key => {
         settingsCache.del(key);
         dashboardCache.del(key);
         questionsCache.del(key);
     });
-    
+
     console.log(`🗑️ Invalidated cache keys: ${keys.join(', ')}`);
 };
 
@@ -56,7 +56,7 @@ const invalidateCache = (pattern) => {
 const getCachedSettings = async () => {
     return withCache(settingsCache, CACHE_KEYS.SETTINGS, async () => {
         const result = await pool.query("SELECT setting_key, setting_value FROM app_settings");
-        
+
         if (result.rows.length === 0) {
             return {
                 minimum_passing_score: 70,
@@ -66,6 +66,7 @@ const getCachedSettings = async () => {
                 mg1_speed_normal: 2500,
                 mg1_speed_hard: 1000,
                 mg2_enabled: true,
+                mg2_rounds: 3,
                 mg2_speed_normal: 2500,
                 mg2_speed_hard: 1500,
                 mg3_enabled: true,
@@ -155,15 +156,15 @@ const getCachedDashboard = async () => {
 const getCachedQuestions = async () => {
     return withCache(questionsCache, CACHE_KEYS.QUESTIONS, async () => {
         await pool.query("UPDATE questions SET is_active = true WHERE is_active IS NULL");
-        
+
         const questionsResult = await pool.query("SELECT * FROM questions WHERE is_active = true ORDER BY question_id ASC");
-        
+
         if (questionsResult.rows.length === 0) {
             return [];
         }
 
         const questionIds = questionsResult.rows.map(q => q.question_id);
-        
+
         const answersResult = await pool.query(
             "SELECT question_id, answer_id, answer_text, score FROM question_answers WHERE question_id = ANY($1) ORDER BY answer_id ASC",
             [questionIds]

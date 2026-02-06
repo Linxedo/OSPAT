@@ -3,72 +3,76 @@ const { getCachedSettings, invalidateCache, CACHE_KEYS } = require('../../utils/
 
 // Helper to normalize Android naming to backend naming
 const normalizeSettings = (settings) => {
-    const normalized = { ...settings };
+    // Explicitly map every field to avoid any spread issues or missing keys
+    const normalized = {
+        minimum_passing_score: settings.minimum_passing_score,
+        hard_mode_threshold: settings.hard_mode_threshold,
 
-    // Map minigameX_enabled to mgX_enabled
-    for (let i = 1; i <= 5; i++) {
-        if (settings[`minigame${i}_enabled`] !== undefined) {
-            normalized[`mg${i}_enabled`] = settings[`minigame${i}_enabled`];
-        }
-    }
+        // Minigame 1
+        mg1_enabled: settings.minigame1_enabled !== undefined ? settings.minigame1_enabled : settings.mg1_enabled,
+        mg1_speed_normal: settings.mg1_speed_normal,
+        mg1_speed_hard: settings.mg1_speed_hard,
 
-    // Map minigame speed/time settings
-    const mappings = {
-        'minigame1_speed_normal': 'mg1_speed_normal',
-        'minigame1_speed_hard': 'mg1_speed_hard',
-        'minigame2_speed_normal': 'mg2_speed_normal',
-        'minigame2_speed_hard': 'mg2_speed_hard',
-        'minigame2_rounds': 'minigame2_rounds',
-        'minigame3_rounds': 'mg3_rounds',
-        'minigame3_time_normal': 'mg3_time_normal',
-        'minigame3_time_hard': 'mg3_time_hard',
-        'minigame4_time_normal': 'mg4_time_normal',
-        'minigame4_time_hard': 'mg4_time_hard',
-        'minigame5_time_normal': 'mg5_time_normal',
-        'minigame5_time_hard': 'mg5_time_hard'
+        // Minigame 2
+        mg2_enabled: settings.minigame2_enabled !== undefined ? settings.minigame2_enabled : settings.mg2_enabled,
+        mg2_rounds: settings.mg2_rounds,
+        mg2_speed_normal: settings.mg2_speed_normal,
+        mg2_speed_hard: settings.mg2_speed_hard,
+
+        // Minigame 3
+        mg3_enabled: settings.minigame3_enabled !== undefined ? settings.minigame3_enabled : settings.mg3_enabled,
+        mg3_rounds: settings.mg3_rounds,
+        mg3_time_normal: settings.mg3_time_normal,
+        mg3_time_hard: settings.mg3_time_hard,
+
+        // Minigame 4
+        mg4_enabled: settings.minigame4_enabled !== undefined ? settings.minigame4_enabled : settings.mg4_enabled,
+        mg4_time_normal: settings.mg4_time_normal,
+        mg4_time_hard: settings.mg4_time_hard,
+
+        // Minigame 5
+        mg5_enabled: settings.minigame5_enabled !== undefined ? settings.minigame5_enabled : settings.mg5_enabled,
+        mg5_time_normal: settings.mg5_time_normal,
+        mg5_time_hard: settings.mg5_time_hard
     };
-
-    Object.entries(mappings).forEach(([android, backend]) => {
-        if (settings[android] !== undefined) {
-            normalized[backend] = settings[android];
-        }
-    });
 
     return normalized;
 };
 
 // Helper to convert backend naming to Android naming
 const toAndroidSettings = (settings) => {
-    const android = { ...settings };
+    // Explicitly map every field expected by the Android app
+    const android = {
+        minimum_passing_score: settings.minimum_passing_score,
+        hard_mode_threshold: settings.hard_mode_threshold,
 
-    // Map mgX_enabled to minigameX_enabled
-    for (let i = 1; i <= 5; i++) {
-        if (settings[`mg${i}_enabled`] !== undefined) {
-            android[`minigame${i}_enabled`] = settings[`mg${i}_enabled`];
-        }
-    }
+        // Minigame 1
+        minigame1_enabled: settings.mg1_enabled,
+        mg1_speed_normal: settings.mg1_speed_normal,
+        mg1_speed_hard: settings.mg1_speed_hard,
 
-    // Map speed/time settings
-    const mappings = {
-        'mg1_speed_normal': 'minigame1_speed_normal',
-        'mg1_speed_hard': 'minigame1_speed_hard',
-        'mg2_speed_normal': 'minigame2_speed_normal',
-        'mg2_speed_hard': 'minigame2_speed_hard',
-        'minigame2_rounds': 'minigame2_rounds',
-        'mg3_rounds': 'minigame3_rounds',
-        'mg3_time_normal': 'minigame3_time_normal',
-        'mg3_time_hard': 'minigame3_time_hard',
-        'mg4_time_normal': 'minigame4_time_normal',
-        'mg4_time_hard': 'minigame4_time_hard',
-        'mg5_time_normal': 'minigame5_time_normal',
-        'mg5_time_hard': 'minigame5_time_hard'
+        // Minigame 2
+        minigame2_enabled: settings.mg2_enabled,
+        mg2_rounds: settings.mg2_rounds,
+        mg2_speed_normal: settings.mg2_speed_normal,
+        mg2_speed_hard: settings.mg2_speed_hard,
+
+        // Minigame 3
+        minigame3_enabled: settings.mg3_enabled,
+        mg3_rounds: settings.mg3_rounds,
+        mg3_time_normal: settings.mg3_time_normal,
+        mg3_time_hard: settings.mg3_time_hard,
+
+        // Minigame 4
+        minigame4_enabled: settings.mg4_enabled,
+        mg4_time_normal: settings.mg4_time_normal,
+        mg4_time_hard: settings.mg4_time_hard,
+
+        // Minigame 5
+        minigame5_enabled: settings.mg5_enabled,
+        mg5_time_normal: settings.mg5_time_normal,
+        mg5_time_hard: settings.mg5_time_hard
     };
-
-    Object.entries(mappings).forEach(([backend, androidKey]) => {
-        if (settings[backend] !== undefined) {
-            android[androidKey] = settings[backend];
-        }
-    });
 
     return android;
 };

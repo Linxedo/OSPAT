@@ -61,6 +61,7 @@ router.post('/settings', debugLogger, [
     body('mg1_speed_normal').optional().isInt({ min: 100, max: 5000 }),
     body('mg1_speed_hard').optional().isInt({ min: 50, max: 2000 }),
     body('mg2_enabled').optional().isBoolean(),
+    body('mg2_rounds').optional().isInt({ min: 1, max: 20 }),
     body('mg2_speed_normal').optional().isInt({ min: 100, max: 5000 }),
     body('mg2_speed_hard').optional().isInt({ min: 50, max: 2000 }),
     body('mg3_enabled').optional().isBoolean(),
