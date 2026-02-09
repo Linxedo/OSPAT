@@ -27,8 +27,11 @@ const Users = () => {
         retryDelay: 1000,
         refetchOnWindowFocus: false,
         keepPreviousData: true,
-        onSuccess: (data) => {
-            setPagination(data.pagination);
+        onSuccess: (response) => {
+            // Response format: { success: true, data: [...users...], pagination: {...} }
+            if (response?.pagination) {
+                setPagination(response.pagination);
+            }
         }
     })
 
@@ -69,6 +72,7 @@ const Users = () => {
         }
     })
 
+    // Response format: { success: true, data: [...users...], pagination: {...} }
     const users = data?.data || []
 
     useEffect(() => {

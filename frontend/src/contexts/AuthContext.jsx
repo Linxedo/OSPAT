@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { authService } from '../services/authService'
+import { getUserFriendlyError } from '../utils/errorHandler'
 
 const AuthContext = createContext()
 
@@ -24,11 +25,11 @@ export const AuthProvider = ({ children }) => {
                 setUser(response.data.admin)
                 return { success: true }
             }
-            return { success: false, message: response.message }
+            return { success: false, message: response.message || 'Login failed' }
         } catch (error) {
             return {
                 success: false,
-                message: error.response?.data?.message || 'Login failed'
+                message: error.userMessage || getUserFriendlyError(error)
             }
         }
     }, [])
