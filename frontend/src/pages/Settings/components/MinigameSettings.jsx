@@ -30,9 +30,10 @@ const MinigameSettings = ({ settings, onSubmit, loading }) => {
             key: 'mg1',
             name: 'Minigame 1 - Reaction Speed',
             fields: [
-                { key: 'enabled', label: 'Enable', type: 'switch', col: 4 },
-                { key: 'speed_normal', label: 'Normal Speed', type: 'select', col: 4 },
-                { key: 'speed_hard', label: 'Hard Speed', type: 'select', col: 4 }
+                { key: 'enabled', label: 'Enable', type: 'switch', col: 3 },
+                { key: 'duration_seconds', label: 'Time', type: 'number', col: 3, min: 5, max: 120 },
+                { key: 'speed_normal', label: 'Normal Speed', type: 'select', col: 3 },
+                { key: 'speed_hard', label: 'Hard Speed', type: 'select', col: 3 }
             ]
         },
         {
@@ -59,18 +60,20 @@ const MinigameSettings = ({ settings, onSubmit, loading }) => {
             key: 'mg4',
             name: 'Minigame 4 - Rhythm Game OSU',
             fields: [
-                { key: 'enabled', label: 'Enable', type: 'switch', col: 4 },
-                { key: 'time_normal', label: 'Normal Speed', type: 'select', col: 4 },
-                { key: 'time_hard', label: 'Hard Speed', type: 'select', col: 4 }
+                { key: 'enabled', label: 'Enable', type: 'switch', col: 3 },
+                { key: 'duration_seconds', label: 'Time', type: 'number', col: 3, min: 5, max: 120 },
+                { key: 'time_normal', label: 'Normal Speed', type: 'select', col: 3 },
+                { key: 'time_hard', label: 'Hard Speed', type: 'select', col: 3 }
             ]
         },
         {
             key: 'mg5',
             name: 'Minigame 5 - Shape Game',
             fields: [
-                { key: 'enabled', label: 'Enable', type: 'switch', col: 4 },
-                { key: 'time_normal', label: 'Normal Speed', type: 'select', col: 4 },
-                { key: 'time_hard', label: 'Hard Speed', type: 'select', col: 4 }
+                { key: 'enabled', label: 'Enable', type: 'switch', col: 3 },
+                { key: 'duration_seconds', label: 'Time', type: 'number', col: 3, min: 5, max: 120 },
+                { key: 'time_normal', label: 'Normal Speed', type: 'select', col: 3 },
+                { key: 'time_hard', label: 'Hard Speed', type: 'select', col: 3 }
             ]
         }
     ]
@@ -79,6 +82,27 @@ const MinigameSettings = ({ settings, onSubmit, loading }) => {
         <Card className="border-0 shadow-sm" style={{ background: 'var(--bg-card)' }}>
             <Card.Body>
                 <Form onSubmit={settingsForm.handleSubmit(handleFormSubmit)}>
+                    <div className="mb-4">
+                        <h5 className="mb-3" style={{ color: 'var(--text-primary)' }}>Minigame Settings</h5>
+                        <Row>
+                            <Col md={4}>
+                                <Form.Group>
+                                    <Form.Label style={{ color: 'var(--text-primary)' }}>Get Ready Countdown</Form.Label>
+                                    <Form.Control
+                                        type="number"
+                                        min={1}
+                                        max={10}
+                                        {...settingsForm.register('minigame_countdown_seconds', { valueAsNumber: true })}
+                                        style={{
+                                            backgroundColor: 'var(--bg-tertiary)',
+                                            borderColor: 'var(--border-secondary)',
+                                            color: 'var(--text-primary)'
+                                        }}
+                                    />
+                                </Form.Group>
+                            </Col>
+                        </Row>
+                    </div>
                     {minigames.map((minigame) => (
                         <div key={minigame.key}>
                             <h5 className="mb-3" style={{ color: 'var(--text-primary)' }}>{minigame.name}</h5>
@@ -115,6 +139,8 @@ const MinigameSettings = ({ settings, onSubmit, loading }) => {
                                                 <Form.Label style={{ color: 'var(--text-primary)' }}>{field.label}</Form.Label>
                                                 <Form.Control
                                                     type="number"
+                                                    min={field.min}
+                                                    max={field.max}
                                                     {...settingsForm.register(`${minigame.key}_${field.key}`, { valueAsNumber: true })}
                                                     style={{
                                                         backgroundColor: 'var(--bg-tertiary)',

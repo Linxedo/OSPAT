@@ -106,8 +106,10 @@ const Settings = () => {
             mg1_enabled: Boolean(data.mg1_enabled),
             mg1_speed_normal: Number(data.mg1_speed_normal),
             mg1_speed_hard: Number(data.mg1_speed_hard),
+            mg1_duration_seconds: Number(data.mg1_duration_seconds) || 10,
+            minigame_countdown_seconds: Number(data.minigame_countdown_seconds) || 5,
 
-            // Minigame 2 - The one with reporting issues
+            // Minigame 2
             mg2_enabled: Boolean(data.mg2_enabled),
             mg2_rounds: Number(data.mg2_rounds),
             mg2_speed_normal: Number(data.mg2_speed_normal),
@@ -123,11 +125,13 @@ const Settings = () => {
             mg4_enabled: Boolean(data.mg4_enabled),
             mg4_time_normal: Number(data.mg4_time_normal),
             mg4_time_hard: Number(data.mg4_time_hard),
+            mg4_duration_seconds: Number(data.mg4_duration_seconds) || 10,
 
             // Minigame 5
             mg5_enabled: Boolean(data.mg5_enabled),
             mg5_time_normal: Number(data.mg5_time_normal),
-            mg5_time_hard: Number(data.mg5_time_hard)
+            mg5_time_hard: Number(data.mg5_time_hard),
+            mg5_duration_seconds: Number(data.mg5_duration_seconds) || 10
         }
 
         console.log('Sending minigame settings update:', minigameData);
