@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken');
 const { body, validationResult } = require('express-validator');
 const pool = require('../models/db');
 const rateLimit = require('express-rate-limit');
+const logger = require('../utils/logger');
+const responseFormatter = require('../utils/responseFormatter');
 
 const router = express.Router();
 
@@ -22,11 +24,7 @@ router.post('/login', loginLimiter, [
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({
-                success: false,
-                message: 'Validation failed',
-                errors: errors.array()
-            });
+            return responseFormatter.validationError(res, errors.array());
         }
 
         const { employee_id, password } = req.body;
@@ -37,34 +35,23 @@ router.post('/login', loginLimiter, [
         );
 
         if (result.rows.length === 0) {
-            return res.status(401).json({
-                success: false,
-                message: 'Invalid credentials'
-            });
+            return responseFormatter.unauthorized(res, 'Invalid credentials');
         }
 
         const user = result.rows[0];
         if (!user.password || typeof user.password !== 'string' || user.password.trim() === '') {
-            return res.status(401).json({
-                success: false,
-                message: 'Invalid credentials'
-            });
+            return responseFormatter.unauthorized(res, 'Invalid credentials');
         }
 
         const isMatch = await bcrypt.compare(password, user.password);
 
         if (!isMatch) {
-            return res.status(401).json({
-                success: false,
-                message: 'Invalid credentials'
-            });
+            return responseFormatter.unauthorized(res, 'Invalid credentials');
         }
 
         if (!process.env.JWT_SECRET) {
-            return res.status(500).json({
-                success: false,
-                message: 'Server misconfiguration: JWT_SECRET is not set'
-            });
+            logger.error('JWT_SECRET is not set');
+            return responseFormatter.error(res, 'Server configuration error', 500);
         }
 
         const token = jwt.sign(
@@ -73,25 +60,18 @@ router.post('/login', loginLimiter, [
             { expiresIn: process.env.JWT_EXPIRE || '7d' }
         );
 
-        res.json({
-            success: true,
-            message: 'Login successful',
-            data: {
-                token,
-                admin: {
-                    id: user.id,
-                    name: user.name,
-                    employee_id: user.employee_id
-                }
+        return responseFormatter.success(res, {
+            token,
+            admin: {
+                id: user.id,
+                name: user.name,
+                employee_id: user.employee_id
             }
-        });
+        }, 'Login successful');
 
     } catch (error) {
-        console.error('Login error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Server error'
-        });
+        logger.error('Login error', error);
+        return responseFormatter.error(res, 'Login failed', 500, error);
     }
 });
 
@@ -101,12 +81,12 @@ router.get('/validate', async (req, res) => {
         const token = authHeader && authHeader.split(' ')[1];
 
         if (!token) {
-            return res.status(401).json({ success: false, message: 'Access token required' });
+            return responseFormatter.unauthorized(res, 'Access token required');
         }
 
         jwt.verify(token, process.env.JWT_SECRET, async (err, user) => {
             if (err) {
-                return res.status(403).json({ success: false, message: 'Invalid or expired token' });
+                return responseFormatter.unauthorized(res, 'Invalid or expired token');
             }
 
             try {
@@ -116,23 +96,20 @@ router.get('/validate', async (req, res) => {
                 );
 
                 if (result.rows.length === 0) {
-                    return res.status(403).json({ success: false, message: 'Admin access required' });
+                    return responseFormatter.forbidden(res, 'Admin access required');
                 }
 
-                res.json({
-                    success: true,
-                    data: {
-                        admin: result.rows[0]
-                    }
+                return responseFormatter.success(res, {
+                    admin: result.rows[0]
                 });
             } catch (error) {
-                console.error('Admin validation error:', error);
-                res.status(500).json({ success: false, message: 'Server error' });
+                logger.error('Admin validation error', error);
+                return responseFormatter.error(res, 'Token validation failed', 500, error);
             }
         });
     } catch (error) {
-        console.error('Token validation error:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
+        logger.error('Token validation error', error);
+        return responseFormatter.error(res, 'Token validation failed', 500, error);
     }
 });
 

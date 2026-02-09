@@ -1,27 +1,16 @@
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcrypt');
 const pool = require('../../models/db');
+const logger = require('../../utils/logger');
+const responseFormatter = require('../../utils/responseFormatter');
+const { logActivity, getPaginationParams, buildPaginationResponse } = require('../../utils/helpers');
 
 const SALT_ROUNDS = 10;
 
-// Helper function to log activity
-const logActivity = async (pool, activityType, description, userId) => {
-    try {
-        await pool.query(
-            'INSERT INTO activity_log (activity_type, description, user_id) VALUES ($1, $2, $3)',
-            [activityType, description, userId]
-        );
-    } catch (error) {
-        console.log('Activity logging failed:', error.message);
-    }
-};
-
 exports.getUsers = async (req, res) => {
     try {
-        const page = parseInt(req.query.page) || 1;
+        const { page, limit, offset } = getPaginationParams(req.query);
         const search = req.query.search || '';
-        const limit = 10;
-        const offset = (page - 1) * limit;
 
         let countQuery = 'SELECT COUNT(*) as total FROM users';
         let dataQuery = 'SELECT id, name, employee_id, role FROM users';
@@ -38,26 +27,22 @@ exports.getUsers = async (req, res) => {
         dataQuery += ' ORDER BY CASE WHEN role = \'admin\' THEN 0 ELSE 1 END, name ASC LIMIT $' + (queryParams.length + 1) + ' OFFSET $' + (queryParams.length + 2);
         queryParams.push(limit, offset);
 
-        const countResult = await pool.query(countQuery, countParams);
-        const totalCount = parseInt(countResult.rows[0].total);
-        const result = await pool.query(dataQuery, queryParams);
-        const totalPages = Math.ceil(totalCount / limit);
+        const [countResult, result] = await Promise.all([
+            pool.query(countQuery, countParams),
+            pool.query(dataQuery, queryParams)
+        ]);
 
-        res.json({
+        const totalCount = parseInt(countResult.rows[0].total);
+
+        // Maintain backward compatibility: frontend expects data as array, pagination as separate field
+        return res.json({
             success: true,
             data: result.rows,
-            pagination: {
-                currentPage: page,
-                totalPages: totalPages,
-                totalRecords: totalCount,
-                recordsPerPage: limit,
-                hasNextPage: page < totalPages,
-                hasPrevPage: page > 1
-            }
+            pagination: buildPaginationResponse(page, limit, totalCount)
         });
     } catch (error) {
-        console.error('Users fetch error:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
+        logger.error('Users fetch error', error);
+        return responseFormatter.error(res, 'Failed to fetch users', 500, error);
     }
 };
 
@@ -65,11 +50,7 @@ exports.createUser = async (req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({
-                success: false,
-                message: 'Validation failed',
-                errors: errors.array()
-            });
+            return responseFormatter.validationError(res, errors.array());
         }
 
         const { name, employee_id, role, password } = req.body;
@@ -80,10 +61,7 @@ exports.createUser = async (req, res) => {
         );
 
         if (existingUser.rows.length > 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Employee ID already exists'
-            });
+            return responseFormatter.error(res, 'Employee ID already exists', 400);
         }
 
         let hashedPassword = '';
@@ -96,16 +74,12 @@ exports.createUser = async (req, res) => {
             [name, employee_id, role, hashedPassword]
         );
 
-        await logActivity(pool, 'user_created', `New user "${name}" (${employee_id}) joined the system`, req.user?.userId);
+        await logActivity('user_created', `New user "${name}" (${employee_id}) joined the system`, req.user?.userId);
 
-        res.status(201).json({
-            success: true,
-            message: 'User created successfully',
-            data: result.rows[0]
-        });
+        return responseFormatter.success(res, result.rows[0], 'User created successfully', 201);
     } catch (error) {
-        console.error('User creation error:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
+        logger.error('User creation error', error);
+        return responseFormatter.error(res, 'Failed to create user', 500, error);
     }
 };
 
@@ -113,11 +87,7 @@ exports.updateUser = async (req, res) => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            return res.status(400).json({
-                success: false,
-                message: 'Validation failed',
-                errors: errors.array()
-            });
+            return responseFormatter.validationError(res, errors.array());
         }
 
         const { id } = req.params;
@@ -125,10 +95,7 @@ exports.updateUser = async (req, res) => {
 
         const currentUser = await pool.query('SELECT role FROM users WHERE id = $1', [id]);
         if (currentUser.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found'
-            });
+            return responseFormatter.notFound(res, 'User');
         }
 
         const currentRole = currentUser.rows[0].role;
@@ -147,20 +114,13 @@ exports.updateUser = async (req, res) => {
         const result = await pool.query(updateQuery, queryParams);
 
         if (result.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found'
-            });
+            return responseFormatter.notFound(res, 'User');
         }
 
-        res.json({
-            success: true,
-            message: 'User updated successfully',
-            data: result.rows[0]
-        });
+        return responseFormatter.success(res, result.rows[0], 'User updated successfully');
     } catch (error) {
-        console.error('User update error:', error);
-        res.status(500).json({ success: false, message: 'Server error' });
+        logger.error('User update error', error);
+        return responseFormatter.error(res, 'Failed to update user', 500, error);
     }
 };
 
@@ -174,10 +134,7 @@ exports.deleteUser = async (req, res) => {
         );
 
         if (userResult.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'User not found'
-            });
+            return responseFormatter.notFound(res, 'User');
         }
 
         const deletedUser = userResult.rows[0];
@@ -190,27 +147,25 @@ exports.deleteUser = async (req, res) => {
             // Then delete the user
             await pool.query('DELETE FROM users WHERE id = $1', [id]);
         } catch (deleteError) {
-            console.error('Delete error details:', deleteError);
+            logger.error('Delete error details', deleteError);
             
             // Handle foreign key constraint violation
             if (deleteError.code === '23503') {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Cannot delete user. User has related records (test results, etc). Please delete related data first.'
-                });
+                return responseFormatter.error(res, 
+                    'Cannot delete user. User has related records. Please delete related data first.', 
+                    400, 
+                    deleteError
+                );
             }
             
             throw deleteError;
         }
 
-        await logActivity(pool, 'user_deleted', `User "${deletedUser.name}" (${deletedUser.employee_id}) was removed from the system`, req.user?.userId);
+        await logActivity('user_deleted', `User "${deletedUser.name}" (${deletedUser.employee_id}) was removed from the system`, req.user?.userId);
 
-        res.json({
-            success: true,
-            message: 'User deleted successfully'
-        });
+        return responseFormatter.success(res, null, 'User deleted successfully');
     } catch (error) {
-        console.error('User deletion error:', error);
-        res.status(500).json({ success: false, message: 'Server error: ' + error.message });
+        logger.error('User deletion error', error);
+        return responseFormatter.error(res, 'Failed to delete user', 500, error);
     }
 };

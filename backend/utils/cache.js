@@ -1,5 +1,6 @@
 const NodeCache = require('node-cache');
 const pool = require('../models/db');
+const logger = require('./logger');
 
 // Cache configuration
 const cacheConfig = {
@@ -26,11 +27,11 @@ const CACHE_KEYS = {
 const withCache = async (cache, key, fetchFunction, ttl) => {
     const cached = cache.get(key);
     if (cached !== undefined) {
-        console.log(`🎯 Cache HIT for ${key}`);
+        logger.debug(`Cache HIT for ${key}`);
         return cached;
     }
 
-    console.log(`💾 Cache MISS for ${key}, fetching from DB`);
+    logger.debug(`Cache MISS for ${key}, fetching from DB`);
     const data = await fetchFunction();
     cache.set(key, data, ttl);
     return data;
@@ -49,7 +50,7 @@ const invalidateCache = (pattern) => {
         questionsCache.del(key);
     });
 
-    console.log(`🗑️ Invalidated cache keys: ${keys.join(', ')}`);
+    logger.debug(`Invalidated cache keys: ${keys.join(', ')}`);
 };
 
 // Settings specific cache functions
@@ -140,7 +141,7 @@ const getCachedDashboard = async () => {
             `);
             recentActivities = activitiesResult.rows;
         } catch (activitiesError) {
-            console.log('Activities tracking not available:', activitiesError.message);
+            logger.warn('Activities tracking not available', { error: activitiesError.message });
         }
 
         const successRate = testResultsResult.rows[0].total > 0

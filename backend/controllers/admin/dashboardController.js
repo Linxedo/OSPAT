@@ -1,26 +1,19 @@
 const pool = require('../../models/db');
 const { getCachedDashboard, invalidateCache, CACHE_KEYS } = require('../../utils/cache');
+const logger = require('../../utils/logger');
+const responseFormatter = require('../../utils/responseFormatter');
 
 exports.getDashboard = async (req, res) => {
     try {
-        console.log('Dashboard API called by authenticated user:', req.user);
+        logger.debug('Dashboard API called', { userId: req.user?.userId });
 
         // Get cached dashboard data
         const dashboardData = await getCachedDashboard();
 
-        console.log('Dashboard SUCCESS - Data loaded from cache for user:', req.user.name);
-        res.json({
-            success: true,
-            data: dashboardData
-        });
+        logger.debug('Dashboard data loaded', { userId: req.user?.userId });
+        return responseFormatter.success(res, dashboardData);
     } catch (error) {
-        console.error('Dashboard error:', error.message);
-        console.error('User info:', req.user);
-        console.error('Error stack:', error.stack);
-        res.status(500).json({
-            success: false,
-            message: 'Server error',
-            details: error.message
-        });
+        logger.error('Dashboard error', error, { userId: req.user?.userId });
+        return responseFormatter.error(res, 'Failed to load dashboard data', 500, error);
     }
 };
