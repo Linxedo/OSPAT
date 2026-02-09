@@ -14,6 +14,13 @@ const logActivity = async (pool, activityType, description, userId) => {
     }
 };
 
+// Durasi minigame: 5–120 detik; jika > 120 anggap milidetik (mis. 1000/15000)
+const normalizeDurationSeconds = (val, defaultVal = 10) => {
+    const n = parseInt(val, 10) || defaultVal;
+    if (n > 120) return Math.max(5, Math.min(120, Math.round(n / 1000)));
+    return Math.max(5, Math.min(120, n));
+};
+
 // Helper function for UPSERT (INSERT or UPDATE)
 const upsertSetting = async (key, value) => {
     console.log(`💾 Upserting ${key} = ${value}`);
@@ -64,6 +71,10 @@ exports.getSettings = async (req, res) => {
 
         const responseData = {
             ...settings,
+            mg1_duration_seconds: normalizeDurationSeconds(settings.mg1_duration_seconds, 10),
+            minigame_countdown_seconds: (() => { const n = parseInt(settings.minigame_countdown_seconds, 10) || 5; return n > 10 ? Math.max(1, Math.min(10, Math.round(n / 1000))) : Math.max(1, Math.min(10, n)); })(),
+            mg4_duration_seconds: normalizeDurationSeconds(settings.mg4_duration_seconds, 10),
+            mg5_duration_seconds: normalizeDurationSeconds(settings.mg5_duration_seconds, 10),
             mg1_score_hit: parseInt(settings.mg1_score_hit) || 50,
             mg2_score_max: parseInt(settings.mg2_score_max) || 1000,
             mg3_score_round: parseInt(settings.mg3_score_round) || 200,
@@ -120,6 +131,12 @@ exports.updateSettings = async (req, res) => {
             mg1_enabled: req.body.mg1_enabled,
             mg1_speed_normal: req.body.mg1_speed_normal,
             mg1_speed_hard: req.body.mg1_speed_hard,
+            mg1_duration_seconds: normalizeDurationSeconds(req.body.mg1_duration_seconds, 10),
+            minigame_countdown_seconds: (() => {
+                const v = req.body.minigame_countdown_seconds;
+                const n = parseInt(v, 10) || 5;
+                return n > 10 ? Math.max(1, Math.min(10, Math.round(n / 1000))) : Math.max(1, Math.min(10, n));
+            })(),
             // Minigame 2
             mg2_enabled: req.body.mg2_enabled,
             mg2_rounds: req.body.mg2_rounds,
@@ -134,10 +151,12 @@ exports.updateSettings = async (req, res) => {
             mg4_enabled: req.body.mg4_enabled,
             mg4_time_normal: req.body.mg4_time_normal,
             mg4_time_hard: req.body.mg4_time_hard,
+            mg4_duration_seconds: normalizeDurationSeconds(req.body.mg4_duration_seconds, 10),
             // Minigame 5
             mg5_enabled: req.body.mg5_enabled,
             mg5_time_normal: req.body.mg5_time_normal,
             mg5_time_hard: req.body.mg5_time_hard,
+            mg5_duration_seconds: normalizeDurationSeconds(req.body.mg5_duration_seconds, 10),
             // Minigame Scores
             mg1_score_hit: req.body.mg1_score_hit,
             mg2_score_max: req.body.mg2_score_max,
@@ -174,6 +193,8 @@ exports.updateSettings = async (req, res) => {
             mg1_enabled: settings.mg1_enabled ?? false,
             mg1_speed_normal: settings.mg1_speed_normal ?? 2500,
             mg1_speed_hard: settings.mg1_speed_hard ?? 250,
+            mg1_duration_seconds: normalizeDurationSeconds(settings.mg1_duration_seconds, 10),
+            minigame_countdown_seconds: (() => { const n = parseInt(settings.minigame_countdown_seconds, 10) || 5; return n > 10 ? Math.max(1, Math.min(10, Math.round(n / 1000))) : Math.max(1, Math.min(10, n)); })(),
             mg2_enabled: settings.mg2_enabled ?? false,
             mg2_rounds: settings.mg2_rounds ?? 3,
             mg2_speed_normal: settings.mg2_speed_normal ?? 2500,
@@ -185,9 +206,11 @@ exports.updateSettings = async (req, res) => {
             mg4_enabled: settings.mg4_enabled ?? false,
             mg4_time_normal: settings.mg4_time_normal ?? 3000,
             mg4_time_hard: settings.mg4_time_hard ?? 2000,
+            mg4_duration_seconds: normalizeDurationSeconds(settings.mg4_duration_seconds, 10),
             mg5_enabled: settings.mg5_enabled ?? false,
             mg5_time_normal: settings.mg5_time_normal ?? 3000,
             mg5_time_hard: settings.mg5_time_hard ?? 2000,
+            mg5_duration_seconds: normalizeDurationSeconds(settings.mg5_duration_seconds, 10),
             mg1_score_hit: parseInt(settings.mg1_score_hit) || 50,
             mg2_score_max: parseInt(settings.mg2_score_max) || 1000,
             mg3_score_round: parseInt(settings.mg3_score_round) || 200,

@@ -65,6 +65,8 @@ const getCachedSettings = async () => {
             mg1_enabled: true,
             mg1_speed_normal: 2500,
             mg1_speed_hard: 1000,
+            mg1_duration_seconds: 10,
+            minigame_countdown_seconds: 5,
             mg1_score_hit: 50,
             mg2_enabled: true,
             mg2_rounds: 3,
@@ -79,10 +81,12 @@ const getCachedSettings = async () => {
             mg4_enabled: true,
             mg4_time_normal: 3000,
             mg4_time_hard: 2000,
+            mg4_duration_seconds: 10,
             mg4_score_max: 100,
             mg5_enabled: true,
             mg5_time_normal: 3000,
             mg5_time_hard: 2000,
+            mg5_duration_seconds: 10,
             mg5_score_hit: 50
         };
 

@@ -1,6 +1,20 @@
 const pool = require('../../models/db');
 const { getCachedSettings, invalidateCache, CACHE_KEYS } = require('../../utils/cache');
 
+// Countdown harus 1–10 detik; jika > 10 (mis. 1000 dari speed) anggap milidetik
+function normalizeCountdownSeconds(val) {
+    const n = parseInt(val, 10) || 5;
+    if (n > 60) return Math.max(1, Math.min(10, Math.round(n / 1000)));
+    return Math.max(1, Math.min(10, n));
+}
+
+// Durasi minigame harus 5–120 detik; jika > 120 (mis. 1000/15000) anggap milidetik
+function normalizeDurationSeconds(val, defaultVal = 10) {
+    const n = parseInt(val, 10) || defaultVal;
+    if (n > 120) return Math.max(5, Math.min(120, Math.round(n / 1000)));
+    return Math.max(5, Math.min(120, n));
+}
+
 // Helper to normalize Android naming to backend naming
 const normalizeSettings = (settings) => {
     // Explicitly map every field to avoid any spread issues or missing keys
@@ -12,6 +26,8 @@ const normalizeSettings = (settings) => {
         mg1_enabled: settings.minigame1_enabled !== undefined ? settings.minigame1_enabled : settings.mg1_enabled,
         mg1_speed_normal: settings.mg1_speed_normal,
         mg1_speed_hard: settings.mg1_speed_hard,
+        mg1_duration_seconds: settings.mg1_duration_seconds,
+        minigame_countdown_seconds: settings.minigame_countdown_seconds,
 
         // Minigame 2
         mg2_enabled: settings.minigame2_enabled !== undefined ? settings.minigame2_enabled : settings.mg2_enabled,
@@ -29,11 +45,13 @@ const normalizeSettings = (settings) => {
         mg4_enabled: settings.minigame4_enabled !== undefined ? settings.minigame4_enabled : settings.mg4_enabled,
         mg4_time_normal: settings.mg4_time_normal,
         mg4_time_hard: settings.mg4_time_hard,
+        mg4_duration_seconds: settings.mg4_duration_seconds,
 
         // Minigame 5
         mg5_enabled: settings.minigame5_enabled !== undefined ? settings.minigame5_enabled : settings.mg5_enabled,
         mg5_time_normal: settings.mg5_time_normal,
         mg5_time_hard: settings.mg5_time_hard,
+        mg5_duration_seconds: settings.mg5_duration_seconds,
         // Scores
         mg1_score_hit: settings.mg1_score_hit,
         mg2_score_max: settings.mg2_score_max,
@@ -56,6 +74,8 @@ const toAndroidSettings = (settings) => {
         minigame1_enabled: settings.mg1_enabled,
         mg1_speed_normal: settings.mg1_speed_normal,
         mg1_speed_hard: settings.mg1_speed_hard,
+        mg1_duration_seconds: normalizeDurationSeconds(settings.mg1_duration_seconds, 10),
+        minigame_countdown_seconds: normalizeCountdownSeconds(settings.minigame_countdown_seconds),
 
         // Minigame 2
         minigame2_enabled: settings.mg2_enabled,
@@ -73,11 +93,13 @@ const toAndroidSettings = (settings) => {
         minigame4_enabled: settings.mg4_enabled,
         mg4_time_normal: settings.mg4_time_normal,
         mg4_time_hard: settings.mg4_time_hard,
+        mg4_duration_seconds: normalizeDurationSeconds(settings.mg4_duration_seconds, 10),
 
         // Minigame 5
         minigame5_enabled: settings.mg5_enabled,
         mg5_time_normal: settings.mg5_time_normal,
         mg5_time_hard: settings.mg5_time_hard,
+        mg5_duration_seconds: normalizeDurationSeconds(settings.mg5_duration_seconds, 10),
         // Scores
         mg1_score_hit: parseInt(settings.mg1_score_hit) || 50,
         mg2_score_max: parseInt(settings.mg2_score_max) || 1000,
