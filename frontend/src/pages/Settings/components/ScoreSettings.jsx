@@ -55,13 +55,13 @@ const ScoreSettings = ({ settings, onSubmit, loading }) => {
 
                     <Row className="mt-3">
                         <Col md={12}>
-                            <h6 className="mb-3" style={{ color: 'var(--accent-primary)', fontWeight: '600' }}>Minigame Reward Settings</h6>
+                            <h6 className="mb-3" style={{ color: 'var(--accent-primary)', fontWeight: '600' }}>Minigame Points Settings</h6>
                         </Col>
 
                         {/* Minigame 1 */}
                         <Col md={4}>
                             <Form.Group className="mb-3">
-                                <Form.Label style={{ color: 'var(--text-primary)' }}>Reaction Speed : Score per Hit</Form.Label>
+                                <Form.Label style={{ color: 'var(--text-primary)' }}>Reaction Speed : Score/Hit</Form.Label>
                                 <Form.Control
                                     type="number"
                                     {...settingsForm.register('mg1_score_hit', { valueAsNumber: true, min: 1 })}
@@ -93,7 +93,7 @@ const ScoreSettings = ({ settings, onSubmit, loading }) => {
                         {/* Minigame 3 */}
                         <Col md={4}>
                             <Form.Group className="mb-3">
-                                <Form.Label style={{ color: 'var(--text-primary)' }}>Memory : Score per Round</Form.Label>
+                                <Form.Label style={{ color: 'var(--text-primary)' }}>Memory : Score/Round</Form.Label>
                                 <Form.Control
                                     type="number"
                                     {...settingsForm.register('mg3_score_round', { valueAsNumber: true, min: 1 })}
@@ -109,7 +109,7 @@ const ScoreSettings = ({ settings, onSubmit, loading }) => {
                         {/* Minigame 4 */}
                         <Col md={6}>
                             <Form.Group className="mb-3">
-                                <Form.Label style={{ color: 'var(--text-primary)' }}>OSU : Max Rhythm Score</Form.Label>
+                                <Form.Label style={{ color: 'var(--text-primary)' }}>OSU : Max Score</Form.Label>
                                 <Form.Control
                                     type="number"
                                     {...settingsForm.register('mg4_score_max', { valueAsNumber: true, min: 1 })}
@@ -125,7 +125,7 @@ const ScoreSettings = ({ settings, onSubmit, loading }) => {
                         {/* Minigame 5 */}
                         <Col md={6}>
                             <Form.Group className="mb-3">
-                                <Form.Label style={{ color: 'var(--text-primary)' }}>Shape Matching : Score per Match</Form.Label>
+                                <Form.Label style={{ color: 'var(--text-primary)' }}>Shape Matching : Score/Shape</Form.Label>
                                 <Form.Control
                                     type="number"
                                     {...settingsForm.register('mg5_score_hit', { valueAsNumber: true, min: 1 })}

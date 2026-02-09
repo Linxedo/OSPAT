@@ -5,7 +5,7 @@ const ScoresModal = ({ show, onHide, selectedResult, hardModeThreshold }) => {
     const getMinigameName = (mgKey) => {
         const names = {
             minigame1_score: 'Reaction Speed',
-            minigame2_score: 'Color Matching',
+            minigame2_score: 'Reaction Time',
             minigame3_score: 'Memory Test',
             minigame4_score: 'Rhythm Game OSU',
             minigame5_score: 'Shape Game'

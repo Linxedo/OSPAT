@@ -31,17 +31,17 @@ const MinigameSettings = ({ settings, onSubmit, loading }) => {
             name: 'Minigame 1 - Reaction Speed',
             fields: [
                 { key: 'enabled', label: 'Enable', type: 'switch', col: 3 },
-                { key: 'duration_seconds', label: 'Time', type: 'number', col: 3, min: 5, max: 120 },
+                { key: 'duration_seconds', label: 'Minigame Time', type: 'number', col: 3, min: 5, max: 120 },
                 { key: 'speed_normal', label: 'Normal Speed', type: 'select', col: 3 },
                 { key: 'speed_hard', label: 'Hard Speed', type: 'select', col: 3 }
             ]
         },
         {
             key: 'mg2',
-            name: 'Minigame 2 - Color Matching',
+            name: 'Minigame 2 - Reaction Time',
             fields: [
                 { key: 'enabled', label: 'Enable', type: 'switch', col: 3 },
-                { key: 'rounds', label: 'Rounds', type: 'number', col: 3 },
+                { key: 'rounds', label: 'Minigame Rounds', type: 'number', col: 3 },
                 { key: 'speed_normal', label: 'Normal Speed', type: 'select', col: 3 },
                 { key: 'speed_hard', label: 'Hard Speed', type: 'select', col: 3 }
             ]
@@ -51,7 +51,7 @@ const MinigameSettings = ({ settings, onSubmit, loading }) => {
             name: 'Minigame 3 - Memory Test',
             fields: [
                 { key: 'enabled', label: 'Enable', type: 'switch', col: 3 },
-                { key: 'rounds', label: 'Rounds', type: 'number', col: 3 },
+                { key: 'rounds', label: 'Minigame Rounds', type: 'number', col: 3 },
                 { key: 'time_normal', label: 'Normal Speed', type: 'select', col: 3 },
                 { key: 'time_hard', label: 'Hard Speed', type: 'select', col: 3 }
             ]
@@ -61,7 +61,7 @@ const MinigameSettings = ({ settings, onSubmit, loading }) => {
             name: 'Minigame 4 - Rhythm Game OSU',
             fields: [
                 { key: 'enabled', label: 'Enable', type: 'switch', col: 3 },
-                { key: 'duration_seconds', label: 'Time', type: 'number', col: 3, min: 5, max: 120 },
+                { key: 'duration_seconds', label: 'Minigame Time', type: 'number', col: 3, min: 5, max: 120 },
                 { key: 'time_normal', label: 'Normal Speed', type: 'select', col: 3 },
                 { key: 'time_hard', label: 'Hard Speed', type: 'select', col: 3 }
             ]
@@ -71,7 +71,7 @@ const MinigameSettings = ({ settings, onSubmit, loading }) => {
             name: 'Minigame 5 - Shape Game',
             fields: [
                 { key: 'enabled', label: 'Enable', type: 'switch', col: 3 },
-                { key: 'duration_seconds', label: 'Time', type: 'number', col: 3, min: 5, max: 120 },
+                { key: 'duration_seconds', label: 'Minigame Time', type: 'number', col: 3, min: 5, max: 120 },
                 { key: 'time_normal', label: 'Normal Speed', type: 'select', col: 3 },
                 { key: 'time_hard', label: 'Hard Speed', type: 'select', col: 3 }
             ]
