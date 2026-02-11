@@ -11,18 +11,20 @@ const HistoryTable = ({
     minimumPassingScore
 }) => {
     const formatDate = (timestamp) => {
-        return new Date(new Date(timestamp).getTime() + 8 * 60 * 60 * 1000).toLocaleDateString('id-ID', {
+        return new Date(timestamp).toLocaleDateString('id-ID', {
             day: '2-digit',
             month: '2-digit',
-            year: 'numeric'
+            year: 'numeric',
+            timeZone: 'Asia/Jakarta'
         })
     }
 
     const formatTime = (timestamp) => {
-        return new Date(new Date(timestamp).getTime() + 8 * 60 * 60 * 1000).toLocaleTimeString('id-ID', {
+        return new Date(timestamp).toLocaleTimeString('id-ID', {
             hour: '2-digit',
             minute: '2-digit',
-            second: '2-digit'
+            second: '2-digit',
+            timeZone: 'Asia/Jakarta'
         })
     }
 

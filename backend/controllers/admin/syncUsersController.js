@@ -17,7 +17,7 @@ exports.syncUsers = async (req, res) => {
     try {
         console.log('User Sync requested by:', req.user.name);
 
-        const externalApiUrl = 'https://system.samuderamuliaabadi.com:8083/api/hrpersonnel/public?queries=empProjCode%3AC0021&limit=250&offset=0';
+        const externalApiUrl = 'https://system.samuderamuliaabadi.com:8083/api/hrpersonnel/public?queries=empProjCode%3AC0021&limit=500&offset=0';
         const response = await axios.get(externalApiUrl);
 
         if (!response.data || !response.data.data) {
