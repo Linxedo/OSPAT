@@ -1,13 +1,14 @@
 import React from 'react'
 import { Card, Table, Button, Badge } from 'react-bootstrap'
+import { calculateFatigueStatus, getFatigueBadgeVariant } from '../../../utils/fatigueStatus'
 
-const HistoryTable = ({ 
-    filteredResults, 
-    hasActiveFilters, 
-    onClearFilters, 
-    onViewScores, 
-    onViewAnswers, 
-    minimumPassingScore 
+const HistoryTable = ({
+    filteredResults,
+    hasActiveFilters,
+    onClearFilters,
+    onViewScores,
+    onViewAnswers,
+    minimumPassingScore
 }) => {
     const formatDate = (timestamp) => {
         return new Date(new Date(timestamp).getTime() + 8 * 60 * 60 * 1000).toLocaleDateString('id-ID', {
@@ -114,85 +115,90 @@ const HistoryTable = ({
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredResults.map((result, index) => (
-                                    <tr key={result.result_id || index}>
-                                        <td>
-                                            <div className="d-flex align-items-center">
-                                                <div className="user-avatar-small me-3">
-                                                    {result.name?.charAt(0).toUpperCase() || 'U'}
-                                                </div>
-                                                <div>
-                                                    <div className="fw-medium" style={{ color: 'var(--text-primary)' }}>
-                                                        {result.name}
+                                {filteredResults.map((result, index) => {
+                                    const fatigueStatus = calculateFatigueStatus(result.total_score, minimumPassingScore)
+                                    const badgeVariant = getFatigueBadgeVariant(fatigueStatus)
+
+                                    return (
+                                        <tr key={result.result_id || index}>
+                                            <td>
+                                                <div className="d-flex align-items-center">
+                                                    <div className="user-avatar-small me-3">
+                                                        {result.name?.charAt(0).toUpperCase() || 'U'}
                                                     </div>
-                                                    <small className="text-muted">Test #{result.result_id || index + 1}</small>
+                                                    <div>
+                                                        <div className="fw-medium" style={{ color: 'var(--text-primary)' }}>
+                                                            {result.name}
+                                                        </div>
+                                                        <small className="text-muted">Test #{result.result_id || index + 1}</small>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <div className="d-flex align-items-center">
-                                                <i className="bi bi-card-text me-2 text-muted small"></i>
-                                                <span className="fw-mono text-muted">{result.employee_id}</span>
-                                            </div>
-                                        </td>
-                                        <td className="text-center">
-                                            <div className="d-flex justify-content-center">
-                                                <span className="badge px-3 py-2 bg-primary bg-opacity-10 text-primary">
-                                                    <i className="bi bi-clipboard-check me-1"></i>
-                                                    {result.assessment_score}
+                                            </td>
+                                            <td>
+                                                <div className="d-flex align-items-center">
+                                                    <i className="bi bi-card-text me-2 text-muted small"></i>
+                                                    <span className="fw-mono text-muted">{result.employee_id}</span>
+                                                </div>
+                                            </td>
+                                            <td className="text-center">
+                                                <div className="d-flex justify-content-center">
+                                                    <span className="badge px-3 py-2 bg-primary bg-opacity-10 text-primary">
+                                                        <i className="bi bi-clipboard-check me-1"></i>
+                                                        {result.assessment_score}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="text-center">
+                                                <span className={`badge px-3 py-2 ${result.total_score >= minimumPassingScore ? 'bg-success' : 'bg-danger'} bg-opacity-10 text-${result.total_score >= minimumPassingScore ? 'success' : 'danger'}`}>
+                                                    <i className={`bi ${result.total_score >= minimumPassingScore ? 'bi-trophy-fill' : 'bi-emoji-frown'} me-1`}></i>
+                                                    {result.total_score}
                                                 </span>
-                                            </div>
-                                        </td>
-                                        <td className="text-center">
-                                            <span className={`badge px-3 py-2 ${result.total_score >= minimumPassingScore ? 'bg-success' : 'bg-danger'} bg-opacity-10 text-${result.total_score >= minimumPassingScore ? 'success' : 'danger'}`}>
-                                                <i className={`bi ${result.total_score >= minimumPassingScore ? 'bi-trophy-fill' : 'bi-emoji-frown'} me-1`}></i>
-                                                {result.total_score}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <div className="d-flex flex-column">
-                                                <span className="text-muted small">
-                                                    {formatDate(result.test_timestamp)}
-                                                </span>
-                                                <span className="text-muted" style={{ fontSize: '0.75rem' }}>
-                                                    {formatTime(result.test_timestamp)}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="text-center">
-                                            <Badge
-                                                bg={result.total_score >= minimumPassingScore ? 'success' : 'danger'}
-                                                className="px-3 py-2"
-                                            >
-                                                <i className={`bi ${result.total_score >= minimumPassingScore ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-1`}></i>
-                                                {result.status || (result.total_score >= minimumPassingScore ? 'Fit' : 'Unfit')}
-                                            </Badge>
-                                        </td>
-                                        <td className="text-center">
-                                            <div className="d-flex gap-2 justify-content-center flex-wrap">
-                                                <Button
-                                                    variant="outline-info"
-                                                    size="sm"
-                                                    onClick={() => onViewScores(result)}
-                                                    className="px-3"
-                                                    title="View minigame scores breakdown"
+                                            </td>
+                                            <td>
+                                                <div className="d-flex flex-column">
+                                                    <span className="text-muted small">
+                                                        {formatDate(result.test_timestamp)}
+                                                    </span>
+                                                    <span className="text-muted" style={{ fontSize: '0.75rem' }}>
+                                                        {formatTime(result.test_timestamp)}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="text-center">
+                                                <Badge
+                                                    bg={badgeVariant}
+                                                    className="px-3 py-2"
                                                 >
-                                                    <i className="bi bi-controller me-1"></i>
-                                                    Score
-                                                </Button>
-                                                <Button
-                                                    variant="outline-primary"
-                                                    size="sm"
-                                                    onClick={() => onViewAnswers(result)}
-                                                    className="px-3"
-                                                >
-                                                    <i className="bi bi-eye me-1"></i>
-                                                    Jawaban
-                                                </Button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
+                                                    <i className={`bi ${fatigueStatus === 'Normal' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'} me-1`}></i>
+                                                    {fatigueStatus}
+                                                </Badge>
+                                            </td>
+                                            <td className="text-center">
+                                                <div className="d-flex gap-2 justify-content-center flex-wrap">
+                                                    <Button
+                                                        variant="outline-info"
+                                                        size="sm"
+                                                        onClick={() => onViewScores(result)}
+                                                        className="px-3"
+                                                        title="View minigame scores breakdown"
+                                                    >
+                                                        <i className="bi bi-controller me-1"></i>
+                                                        Score
+                                                    </Button>
+                                                    <Button
+                                                        variant="outline-primary"
+                                                        size="sm"
+                                                        onClick={() => onViewAnswers(result)}
+                                                        className="px-3"
+                                                    >
+                                                        <i className="bi bi-eye me-1"></i>
+                                                        Jawaban
+                                                    </Button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )
+                                })}
                             </tbody>
                         </Table>
                     </div>

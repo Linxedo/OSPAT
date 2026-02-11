@@ -131,7 +131,7 @@ const History = () => {
     return (
         <Container fluid style={{ minHeight: '100vh', backgroundColor: 'var(--bg-primary)', padding: '2rem' }}>
             <HistoryHeader />
-            
+
             <HistoryFilters
                 searchTerm={searchTerm}
                 selectedDate={selectedDate}
@@ -174,6 +174,7 @@ const History = () => {
                 onHide={handleCloseScoreModal}
                 selectedResult={selectedScoreResult}
                 hardModeThreshold={hardModeThreshold}
+                minimumPassingScore={minimumPassingScore}
             />
         </Container>
     )

@@ -1,7 +1,11 @@
 import React from 'react'
 import { Modal, Card, Row, Col, Badge } from 'react-bootstrap'
+import { calculateFatigueStatus, getFatigueBadgeVariant } from '../../../utils/fatigueStatus'
 
-const ScoresModal = ({ show, onHide, selectedResult, hardModeThreshold }) => {
+const ScoresModal = ({ show, onHide, selectedResult, hardModeThreshold, minimumPassingScore = 80 }) => {
+    const fatigueStatus = selectedResult ? calculateFatigueStatus(selectedResult.total_score, minimumPassingScore) : null
+    const badgeVariant = fatigueStatus ? getFatigueBadgeVariant(fatigueStatus) : 'secondary'
+
     const getMinigameName = (mgKey) => {
         const names = {
             minigame1_score: 'Reaction Speed',
@@ -99,7 +103,22 @@ const ScoresModal = ({ show, onHide, selectedResult, hardModeThreshold }) => {
                                                 <i className="bi bi-trophy me-2" style={{ color: 'var(--accent-primary)' }}></i>
                                                 <div>
                                                     <small className="text-muted d-block" style={{ color: 'var(--text-muted)' }}>Total Score</small>
-                                                    <Badge bg="success" className="px-3 py-2">{selectedResult.total_score}</Badge>
+                                                    <Badge bg={badgeVariant} className="px-3 py-2">{selectedResult.total_score}</Badge>
+                                                </div>
+                                            </div>
+                                        </Col>
+                                        <Col md={6}>
+                                            <div className="d-flex align-items-center">
+                                                <i className="bi bi-activity me-2" style={{ color: 'var(--accent-primary)' }}></i>
+                                                <div>
+                                                    <small className="text-muted d-block" style={{ color: 'var(--text-muted)' }}>Fatigue Status</small>
+                                                    <Badge
+                                                        bg={badgeVariant}
+                                                        className="px-3 py-2"
+                                                    >
+                                                        <i className={`bi ${fatigueStatus === 'Normal' ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'} me-1`}></i>
+                                                        {fatigueStatus}
+                                                    </Badge>
                                                 </div>
                                             </div>
                                         </Col>

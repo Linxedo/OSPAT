@@ -16,6 +16,10 @@ const Dashboard = () => {
         refetchOnWindowFocus: false
     })
 
+    const { data: settingsData } = useQuery('settings', adminService.getSettings, {
+        refetchOnWindowFocus: false
+    })
+
     const handleRefresh = () => {
         queryClient.invalidateQueries('dashboard')
     }
@@ -59,6 +63,8 @@ const Dashboard = () => {
     }
 
     const dashboardData = data?.data || {}
+    const settings = settingsData?.data || {}
+    const minimumPassingScore = settings.minimum_passing_score || 80
 
     return (
         <Container fluid>
