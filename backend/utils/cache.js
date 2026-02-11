@@ -138,10 +138,10 @@ const getCachedDashboard = async () => {
         let recentActivities = [];
         try {
             const activitiesResult = await pool.query(`
-                SELECT al.activity_type, al.description, (al.timestamp AT TIME ZONE 'UTC') as timestamp, u.name as admin_name
+                SELECT al.activity_type, al.description, al.created_at as timestamp, u.name as admin_name
                 FROM activity_log al
                 LEFT JOIN users u ON al.user_id = u.id
-                ORDER BY al.timestamp DESC LIMIT 10
+                ORDER BY al.created_at DESC LIMIT 10
             `);
             recentActivities = activitiesResult.rows;
         } catch (activitiesError) {

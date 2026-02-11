@@ -19,45 +19,46 @@ function normalizeDurationSeconds(val, defaultVal = 10) {
 const normalizeSettings = (settings) => {
     // Explicitly map every field to avoid any spread issues or missing keys
     const normalized = {
-        minimum_passing_score: settings.minimum_passing_score,
-        hard_mode_threshold: settings.hard_mode_threshold,
+        minimum_passing_score: settings.minimum_passing_score || 70,
+        hard_mode_threshold: settings.hard_mode_threshold || 85,
 
         // Minigame 1
-        mg1_enabled: settings.minigame1_enabled !== undefined ? settings.minigame1_enabled : settings.mg1_enabled,
-        mg1_speed_normal: settings.mg1_speed_normal,
-        mg1_speed_hard: settings.mg1_speed_hard,
-        mg1_duration_seconds: settings.mg1_duration_seconds,
-        minigame_countdown_seconds: settings.minigame_countdown_seconds,
+        mg1_enabled: settings.minigame1_enabled !== undefined ? settings.minigame1_enabled : (settings.mg1_enabled || false),
+        mg1_speed_normal: settings.mg1_speed_normal || 2500,
+        mg1_speed_hard: settings.mg1_speed_hard || 1000,
+        mg1_duration_seconds: settings.mg1_duration_seconds || 10,
+        minigame_countdown_seconds: settings.minigame_countdown_seconds || 5,
 
         // Minigame 2
-        mg2_enabled: settings.minigame2_enabled !== undefined ? settings.minigame2_enabled : settings.mg2_enabled,
-        mg2_rounds: settings.mg2_rounds,
-        mg2_speed_normal: settings.mg2_speed_normal,
-        mg2_speed_hard: settings.mg2_speed_hard,
+        mg2_enabled: settings.minigame2_enabled !== undefined ? settings.minigame2_enabled : (settings.mg2_enabled || false),
+        mg2_rounds: settings.mg2_rounds || 3,
+        mg2_speed_normal: settings.mg2_speed_normal || 2500,
+        mg2_speed_hard: settings.mg2_speed_hard || 1500,
 
         // Minigame 3
-        mg3_enabled: settings.minigame3_enabled !== undefined ? settings.minigame3_enabled : settings.mg3_enabled,
-        mg3_rounds: settings.mg3_rounds,
-        mg3_time_normal: settings.mg3_time_normal,
-        mg3_time_hard: settings.mg3_time_hard,
+        mg3_enabled: settings.minigame3_enabled !== undefined ? settings.minigame3_enabled : (settings.mg3_enabled || false),
+        mg3_rounds: settings.mg3_rounds || 5,
+        mg3_time_normal: settings.mg3_time_normal || 3000,
+        mg3_time_hard: settings.mg3_time_hard || 2000,
 
         // Minigame 4
-        mg4_enabled: settings.minigame4_enabled !== undefined ? settings.minigame4_enabled : settings.mg4_enabled,
-        mg4_time_normal: settings.mg4_time_normal,
-        mg4_time_hard: settings.mg4_time_hard,
-        mg4_duration_seconds: settings.mg4_duration_seconds,
+        mg4_enabled: settings.minigame4_enabled !== undefined ? settings.minigame4_enabled : (settings.mg4_enabled || false),
+        mg4_time_normal: settings.mg4_time_normal || 3000,
+        mg4_time_hard: settings.mg4_time_hard || 2000,
+        mg4_duration_seconds: settings.mg4_duration_seconds || 10,
 
         // Minigame 5
-        mg5_enabled: settings.minigame5_enabled !== undefined ? settings.minigame5_enabled : settings.mg5_enabled,
-        mg5_time_normal: settings.mg5_time_normal,
-        mg5_time_hard: settings.mg5_time_hard,
-        mg5_duration_seconds: settings.mg5_duration_seconds,
+        mg5_enabled: settings.minigame5_enabled !== undefined ? settings.minigame5_enabled : (settings.mg5_enabled || false),
+        mg5_time_normal: settings.mg5_time_normal || 3000,
+        mg5_time_hard: settings.mg5_time_hard || 2000,
+        mg5_duration_seconds: settings.mg5_duration_seconds || 10,
+
         // Scores
-        mg1_score_hit: settings.mg1_score_hit,
-        mg2_score_max: settings.mg2_score_max,
-        mg3_score_round: settings.mg3_score_round,
-        mg4_score_max: settings.mg4_score_max,
-        mg5_score_hit: settings.mg5_score_hit
+        mg1_score_hit: settings.mg1_score_hit || 50,
+        mg2_score_max: settings.mg2_score_max || 1000,
+        mg3_score_round: settings.mg3_score_round || 200,
+        mg4_score_max: settings.mg4_score_max || 100,
+        mg5_score_hit: settings.mg5_score_hit || 50
     };
 
     return normalized;
@@ -118,13 +119,15 @@ async function saveAppSettings(settings) {
         await client.query('BEGIN');
 
         for (const [key, value] of Object.entries(settings)) {
-            await client.query(
-                `INSERT INTO app_settings (setting_key, setting_value) 
-                 VALUES ($1, $2) 
-                 ON CONFLICT (setting_key) 
-                 DO UPDATE SET setting_value = $2`,
-                [key, value.toString()]
-            );
+            if (value !== undefined && value !== null) {
+                await client.query(
+                    `INSERT INTO app_settings (setting_key, setting_value) 
+                     VALUES ($1, $2) 
+                     ON CONFLICT (setting_key) 
+                     DO UPDATE SET setting_value = $2`,
+                    [key, value.toString()]
+                );
+            }
         }
 
         await client.query('COMMIT');

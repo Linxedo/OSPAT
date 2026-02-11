@@ -74,7 +74,7 @@ exports.createUser = async (req, res) => {
             [name, employee_id, role, hashedPassword]
         );
 
-        await logActivity('user_created', `New user "${name}" (${employee_id}) joined the system`, req.user?.userId);
+        await logActivity('user_created', `New user "${name}" (${employee_id}) joined the system`, req.user?.id);
 
         return responseFormatter.success(res, result.rows[0], 'User created successfully', 201);
     } catch (error) {
@@ -143,25 +143,25 @@ exports.deleteUser = async (req, res) => {
             // Delete all related records first (if any)
             await pool.query('DELETE FROM test_results WHERE user_id = $1', [id]);
             await pool.query('DELETE FROM activity_log WHERE user_id = $1', [id]);
-            
+
             // Then delete the user
             await pool.query('DELETE FROM users WHERE id = $1', [id]);
         } catch (deleteError) {
             logger.error('Delete error details', deleteError);
-            
+
             // Handle foreign key constraint violation
             if (deleteError.code === '23503') {
-                return responseFormatter.error(res, 
-                    'Cannot delete user. User has related records. Please delete related data first.', 
-                    400, 
+                return responseFormatter.error(res,
+                    'Cannot delete user. User has related records. Please delete related data first.',
+                    400,
                     deleteError
                 );
             }
-            
+
             throw deleteError;
         }
 
-        await logActivity('user_deleted', `User "${deletedUser.name}" (${deletedUser.employee_id}) was removed from the system`, req.user?.userId);
+        await logActivity('user_deleted', `User "${deletedUser.name}" (${deletedUser.employee_id}) was removed from the system`, req.user?.id);
 
         return responseFormatter.success(res, null, 'User deleted successfully');
     } catch (error) {

@@ -116,7 +116,7 @@ exports.updateSettings = async (req, res) => {
             if (newValue !== undefined && newValue !== null) {
                 const currentValue = currentSettings[key];
                 if (currentValue !== newValue.toString()) {
-                    await logActivity(pool, 'setting_updated', `Setting "${key}" changed from "${currentValue || 'empty'}" to "${newValue}"`, req.user?.userId);
+                    await logActivity(pool, 'setting_updated', `Setting "${key}" changed from "${currentValue || 'empty'}" to "${newValue}"`, req.user?.id);
                 }
             }
         }

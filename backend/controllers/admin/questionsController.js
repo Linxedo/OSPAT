@@ -49,7 +49,7 @@ exports.createQuestion = async (req, res) => {
             return questionId;
         });
 
-        await logActivity('question_created', `New question created: "${question_text}"`, req.user?.userId);
+        await logActivity('question_created', `New question created: "${question_text}"`, req.user?.id);
 
         // Invalidate cache to force refresh on next request
         invalidateCache(CACHE_KEYS.QUESTIONS);
@@ -100,7 +100,7 @@ exports.updateQuestion = async (req, res) => {
             }
         });
 
-        await logActivity('question_updated', `Question edited: "${question_text}"`, req.user?.userId);
+        await logActivity('question_updated', `Question edited: "${question_text}"`, req.user?.id);
 
         // Invalidate cache to force refresh on next request
         invalidateCache(CACHE_KEYS.QUESTIONS);
@@ -134,7 +134,7 @@ exports.deleteQuestion = async (req, res) => {
 
         await pool.query("UPDATE questions SET is_active = false WHERE question_id = $1", [id]);
 
-        await logActivity('question_deleted', `Question deleted: "${questionText}"`, req.user?.userId);
+        await logActivity('question_deleted', `Question deleted: "${questionText}"`, req.user?.id);
 
         // Invalidate cache to force refresh on next request
         invalidateCache(CACHE_KEYS.QUESTIONS);

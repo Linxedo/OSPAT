@@ -22,12 +22,36 @@ const authenticateToken = (req, res, next) => {
 
 const requireAdmin = async (req, res, next) => {
     try {
+        // Debug logging
+        logger.info('Admin check - User from token:', {
+            userId: req.user?.id,
+            userRole: req.user?.role,
+            fullUser: req.user
+        });
+
         const result = await pool.query(
-            'SELECT id, name, employee_id FROM users WHERE id = $1 AND role = $2',
-            [req.user.userId, 'admin']
+            'SELECT id, name, employee_id, role FROM users WHERE id = $1 AND role = $2',
+            [req.user.id, 'admin']
         );
 
+        logger.info('Admin check - Database query result:', {
+            rowCount: result.rows.length,
+            user: result.rows[0] || null
+        });
+
         if (result.rows.length === 0) {
+            // Check what role the user actually has
+            const userCheck = await pool.query(
+                'SELECT id, name, employee_id, role FROM users WHERE id = $1',
+                [req.user.id]
+            );
+
+            logger.error('Admin access denied - User details:', {
+                userId: req.user?.id,
+                actualUser: userCheck.rows[0] || null,
+                expectedRole: 'admin'
+            });
+
             return responseFormatter.forbidden(res, 'Admin access required');
         }
 

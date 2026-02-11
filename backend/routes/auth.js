@@ -55,7 +55,11 @@ router.post('/login', loginLimiter, [
         }
 
         const token = jwt.sign(
-            { userId: user.id, employeeId: user.employee_id },
+            {
+                id: user.id,
+                employee_id: user.employee_id,
+                role: user.role
+            },
             process.env.JWT_SECRET,
             { expiresIn: process.env.JWT_EXPIRE || '7d' }
         );
@@ -92,7 +96,7 @@ router.get('/validate', async (req, res) => {
             try {
                 const result = await pool.query(
                     'SELECT id, name, employee_id FROM users WHERE id = $1 AND role = $2',
-                    [user.userId, 'admin']
+                    [user.id, 'admin']
                 );
 
                 if (result.rows.length === 0) {

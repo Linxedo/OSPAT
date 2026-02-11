@@ -65,7 +65,7 @@ exports.syncUsers = async (req, res) => {
             pool,
             'sync_users',
             `Synchronized ${externalUsers.length} users from HR system (${syncedCount} new, ${updatedCount} updated)`,
-            req.user.userId
+            req.user.id
         );
 
         res.json({

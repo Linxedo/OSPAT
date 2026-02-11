@@ -26,7 +26,7 @@ class AppError extends Error {
 const handleValidationError = (req, res, next) => {
     const { validationResult } = require('express-validator');
     const errors = validationResult(req);
-    
+
     if (!errors.isEmpty()) {
         return responseFormatter.validationError(res, errors.array());
     }
@@ -41,7 +41,7 @@ const errorHandler = (err, req, res, next) => {
     logger.error('Request error', err, {
         path: req.path,
         method: req.method,
-        user: req.user?.userId
+        user: req.user?.id
     });
 
     // Handle known application errors
@@ -69,15 +69,15 @@ const errorHandler = (err, req, res, next) => {
     if (err.name === 'JsonWebTokenError') {
         return responseFormatter.unauthorized(res, 'Invalid token');
     }
-    
+
     if (err.name === 'TokenExpiredError') {
         return responseFormatter.unauthorized(res, 'Token expired');
     }
 
     // Default error response
     const statusCode = err.statusCode || err.status || 500;
-    const message = isProd && statusCode === 500 
-        ? 'Internal server error' 
+    const message = isProd && statusCode === 500
+        ? 'Internal server error'
         : err.message || 'Server error';
 
     return responseFormatter.error(res, message, statusCode, err);
