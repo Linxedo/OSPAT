@@ -12,10 +12,29 @@ exports.login = async (req, res) => {
     }
 
     try {
-        const result = await pool.query(
-            "SELECT id, employee_id, name, role FROM users WHERE employee_id = $1",
-            [employee_id.trim()]
-        );
+        let query, params;
+        const trimmedEmployeeId = employee_id.trim();
+
+        // Cek apakah input adalah 4 digit terakhir NIK
+        if (trimmedEmployeeId.match(/^\d{4}$/)) {
+            // Login dengan 4 digit terakhir NIK
+            query = `
+                SELECT id, employee_id, name, role, nik 
+                FROM users 
+                WHERE nik IS NOT NULL AND RIGHT(nik, 4) = $1
+            `;
+            params = [trimmedEmployeeId];
+        } else {
+            // Login dengan employee ID lengkap
+            query = `
+                SELECT id, employee_id, name, role, nik 
+                FROM users 
+                WHERE employee_id = $1
+            `;
+            params = [trimmedEmployeeId];
+        }
+
+        const result = await pool.query(query, params);
 
         if (result.rows.length > 0) {
             const user = result.rows[0];
@@ -34,7 +53,13 @@ exports.login = async (req, res) => {
             res.json({
                 success: true,
                 message: "Login successful",
-                data: user,
+                data: {
+                    id: user.id,
+                    employee_id: user.employee_id,
+                    name: user.name,
+                    role: user.role,
+                    nik: user.nik
+                },
                 token: token
             });
         } else {

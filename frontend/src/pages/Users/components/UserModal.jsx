@@ -11,6 +11,7 @@ const UserModal = ({ show, onHide, editingUser, onSubmit, loading }) => {
                 reset({
                     name: editingUser.name,
                     employee_id: editingUser.employee_id,
+                    nik: editingUser.nik || '',
                     role: editingUser.role,
                     password: ''
                 })
@@ -18,6 +19,7 @@ const UserModal = ({ show, onHide, editingUser, onSubmit, loading }) => {
                 reset({
                     name: '',
                     employee_id: '',
+                    nik: '',
                     role: 'user',
                     password: ''
                 })
@@ -87,6 +89,20 @@ const UserModal = ({ show, onHide, editingUser, onSubmit, loading }) => {
                         <Form.Control.Feedback type="invalid">
                             {errors.employee_id?.message}
                         </Form.Control.Feedback>
+                    </Form.Group>
+
+                    <Form.Group className="mb-3">
+                        <Form.Label style={{ color: 'var(--text-primary)' }}>NIK</Form.Label>
+                        <Form.Control
+                            {...register('nik')}
+                            type="text"
+                            placeholder="Enter NIK (optional)"
+                            style={{
+                                backgroundColor: 'var(--bg-tertiary)',
+                                borderColor: 'var(--border-secondary)',
+                                color: 'var(--text-primary)'
+                            }}
+                        />
                     </Form.Group>
 
                     <Form.Group className="mb-3">

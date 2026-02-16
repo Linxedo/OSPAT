@@ -34,7 +34,7 @@ const UsersTable = ({ users, searchTerm, onSearchChange, onEditUser, onDeleteUse
                             <input
                                 type="text"
                                 className="form-control bg-transparent border-secondary"
-                                placeholder="Search by name or employee ID..."
+                                placeholder="Search by name, employee ID, or NIK..."
                                 value={searchTerm}
                                 onChange={(e) => onSearchChange(e.target.value)}
                                 style={{ color: 'var(--text-primary)' }}
@@ -102,6 +102,12 @@ const UsersTable = ({ users, searchTerm, onSearchChange, onEditUser, onDeleteUse
                                     </th>
                                     <th className="border-0">
                                         <div className="d-flex align-items-center">
+                                            <i className="bi bi-card-text me-2 text-muted"></i>
+                                            NIK
+                                        </div>
+                                    </th>
+                                    <th className="border-0">
+                                        <div className="d-flex align-items-center">
                                             <i className="bi bi-shield me-2 text-muted"></i>
                                             Role
                                         </div>
@@ -137,6 +143,12 @@ const UsersTable = ({ users, searchTerm, onSearchChange, onEditUser, onDeleteUse
                                             <div className="d-flex align-items-center">
                                                 <i className="bi bi-card-text me-2 text-muted small"></i>
                                                 <span className="fw-mono text-muted">{user.employee_id}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div className="d-flex align-items-center">
+                                                <i className="bi bi-person-badge me-2 text-muted small"></i>
+                                                <span className="fw-mono text-muted">{user.nik || '-'}</span>
                                             </div>
                                         </td>
                                         <td>

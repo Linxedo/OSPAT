@@ -27,6 +27,25 @@ export const adminService = {
         return response.data
     },
 
+    // CSV Import
+    previewCSV: async (formData) => {
+        const response = await api.post('/admin/users/import/preview', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        return response.data
+    },
+
+    uploadCSV: async (formData) => {
+        const response = await api.post('/admin/users/import/confirm', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        return response.data
+    },
+
     syncUsers: async () => {
         const response = await api.post('/admin/sync-users')
         return response.data
@@ -84,3 +103,7 @@ export const adminService = {
         return response.data
     }
 }
+
+// Export individual functions for easier importing
+export const previewCSV = adminService.previewCSV
+export const uploadCSV = adminService.uploadCSV

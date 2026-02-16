@@ -13,13 +13,13 @@ exports.getUsers = async (req, res) => {
         const search = req.query.search || '';
 
         let countQuery = 'SELECT COUNT(*) as total FROM users';
-        let dataQuery = 'SELECT id, name, employee_id, role FROM users';
+        let dataQuery = 'SELECT id, name, employee_id, nik, role FROM users';
         let queryParams = [];
         let countParams = [];
 
         if (search) {
-            countQuery += ' WHERE (name ILIKE $1 OR employee_id ILIKE $1)';
-            dataQuery += ' WHERE (name ILIKE $1 OR employee_id ILIKE $1)';
+            countQuery += ' WHERE (name ILIKE $1 OR employee_id ILIKE $1 OR nik ILIKE $1)';
+            dataQuery += ' WHERE (name ILIKE $1 OR employee_id ILIKE $1 OR nik ILIKE $1)';
             countParams.push(`%${search}%`);
             queryParams.push(`%${search}%`);
         }
@@ -53,7 +53,7 @@ exports.createUser = async (req, res) => {
             return responseFormatter.validationError(res, errors.array());
         }
 
-        const { name, employee_id, role, password } = req.body;
+        const { name, employee_id, nik, role, password } = req.body;
 
         const existingUser = await pool.query(
             'SELECT id FROM users WHERE employee_id = $1',
@@ -70,8 +70,8 @@ exports.createUser = async (req, res) => {
         }
 
         const result = await pool.query(
-            'INSERT INTO users (name, employee_id, role, password) VALUES ($1, $2, $3, $4) RETURNING id, name, employee_id, role',
-            [name, employee_id, role, hashedPassword]
+            'INSERT INTO users (name, employee_id, nik, role, password) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, employee_id, nik, role',
+            [name, employee_id, nik, role, hashedPassword]
         );
 
         await logActivity('user_created', `New user "${name}" (${employee_id}) joined the system`, req.user?.id);
@@ -91,7 +91,7 @@ exports.updateUser = async (req, res) => {
         }
 
         const { id } = req.params;
-        const { name, role, password } = req.body;
+        const { name, nik, role, password } = req.body;
 
         const currentUser = await pool.query('SELECT role FROM users WHERE id = $1', [id]);
         if (currentUser.rows.length === 0) {
@@ -99,15 +99,15 @@ exports.updateUser = async (req, res) => {
         }
 
         const currentRole = currentUser.rows[0].role;
-        let updateQuery = 'UPDATE users SET name = $1, role = $2';
-        let queryParams = [name, role];
+        let updateQuery = 'UPDATE users SET name = $1, nik = $2, role = $3';
+        let queryParams = [name, nik, role];
 
         if ((role === 'admin' || currentRole === 'admin') && password) {
             const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
-            updateQuery += ', password = $3 WHERE id = $4 RETURNING id, name, employee_id, role';
+            updateQuery += ', password = $4 WHERE id = $5 RETURNING id, name, employee_id, nik, role';
             queryParams.push(hashedPassword, id);
         } else {
-            updateQuery += ' WHERE id = $3 RETURNING id, name, employee_id, role';
+            updateQuery += ' WHERE id = $4 RETURNING id, name, employee_id, nik, role';
             queryParams.push(id);
         }
 
@@ -129,7 +129,7 @@ exports.deleteUser = async (req, res) => {
         const { id } = req.params;
 
         const userResult = await pool.query(
-            'SELECT name, employee_id, role FROM users WHERE id = $1',
+            'SELECT name, employee_id, nik, role FROM users WHERE id = $1',
             [id]
         );
 

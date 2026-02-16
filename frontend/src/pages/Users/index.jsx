@@ -6,6 +6,8 @@ import UsersHeader from './components/UsersHeader'
 import UsersTable from './components/UsersTable'
 import UsersPagination from './components/UsersPagination'
 import UserModal from './components/UserModal'
+import CSVImportModal from './components/CSVImportModal'
+import ImportSuccessModal from './components/ImportSuccessModal'
 import SyncModal from './components/SyncModal'
 import DeleteModal from './components/DeleteModal'
 
@@ -19,6 +21,9 @@ const Users = () => {
     const [pagination, setPagination] = useState(null)
     const [showSyncModal, setShowSyncModal] = useState(false)
     const [syncResult, setSyncResult] = useState(null)
+    const [showCSVModal, setShowCSVModal] = useState(false)
+    const [showImportSuccessModal, setShowImportSuccessModal] = useState(false)
+    const [importSuccessData, setImportSuccessData] = useState(null)
 
     const queryClient = useQueryClient()
 
@@ -99,6 +104,17 @@ const Users = () => {
         setShowSyncModal(true)
     }
 
+    const handleCSVImport = () => {
+        setShowCSVModal(true)
+    }
+
+    const handleImportSuccess = (importResult) => {
+        queryClient.invalidateQueries('users')
+        setShowCSVModal(false)
+        setImportSuccessData(importResult)
+        setShowImportSuccessModal(true)
+    }
+
     const confirmSync = async () => {
         await syncMutation.mutateAsync()
     }
@@ -163,6 +179,7 @@ const Users = () => {
             <UsersHeader
                 onAddUser={handleAddUser}
                 onSync={handleSync}
+                onCSVImport={handleCSVImport}
                 syncLoading={syncMutation.isLoading}
             />
 
@@ -204,6 +221,18 @@ const Users = () => {
                 onConfirm={confirmDelete}
                 user={deletingUser}
                 loading={deleteMutation.isLoading}
+            />
+
+            <CSVImportModal
+                show={showCSVModal}
+                onHide={() => setShowCSVModal(false)}
+                onImportSuccess={handleImportSuccess}
+            />
+
+            <ImportSuccessModal
+                show={showImportSuccessModal}
+                onHide={() => setShowImportSuccessModal(false)}
+                importData={importSuccessData}
             />
         </Container>
     )

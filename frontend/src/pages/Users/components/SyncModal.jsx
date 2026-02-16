@@ -66,7 +66,6 @@ const SyncModal = ({ show, onHide, onConfirm, loading, result }) => {
                 )}
             </Modal.Footer>
         </Modal>
-    )
-}
+    )}
 
 export default SyncModal

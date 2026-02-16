@@ -39,18 +39,19 @@ exports.syncUsers = async (req, res) => {
             const syncPromises = chunk.map(async (extUser) => {
                 const name = extUser.empName;
                 const employee_id = extUser.empNumber;
+                const nik = extUser.empNik || extUser.nik || null; // Ambil NIK dari response API
 
                 if (!name || !employee_id) return;
 
                 const upsertQuery = `
-                    INSERT INTO users (name, employee_id, role)
-                    VALUES ($1, $2, 'user')
+                    INSERT INTO users (name, employee_id, nik, role)
+                    VALUES ($1, $2, $3, 'user')
                     ON CONFLICT (employee_id) 
-                    DO UPDATE SET name = EXCLUDED.name
+                    DO UPDATE SET name = EXCLUDED.name, nik = EXCLUDED.nik
                     RETURNING (xmax = 0) AS inserted
                 `;
 
-                const result = await pool.query(upsertQuery, [name, employee_id]);
+                const result = await pool.query(upsertQuery, [name, employee_id, nik]);
                 if (result.rows[0].inserted) {
                     syncedCount++;
                 } else {

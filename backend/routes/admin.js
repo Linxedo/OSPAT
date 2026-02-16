@@ -7,6 +7,7 @@ const debugLogger = require('../middleware/debugLogger');
 const dashboardController = require('../controllers/admin/dashboardController');
 const usersController = require('../controllers/admin/usersController');
 const syncUsersController = require('../controllers/admin/syncUsersController');
+const csvImportController = require('../controllers/admin/csvImportController');
 const settingsController = require('../controllers/admin/settingsController');
 const questionsController = require('../controllers/admin/questionsController');
 const historyController = require('../controllers/admin/historyController');
@@ -30,9 +31,20 @@ router.get('/user_answers/:resultId', userAnswersController.getUserAnswers);
 router.delete('/questions/:id', questionsController.deleteQuestion);
 router.delete('/users/:id', usersController.deleteUser);
 
+// CSV Import Routes
+router.post('/users/import/preview',
+    csvImportController.handleFormData,
+    csvImportController.previewCSV
+);
+router.post('/users/import/confirm',
+    csvImportController.handleFormData,
+    csvImportController.confirmImport
+);
+
 router.post('/users', [
     body('name').notEmpty().withMessage('Name is required'),
     body('employee_id').notEmpty().withMessage('Employee ID is required'),
+    body('nik').optional().isLength({ max: 50 }).withMessage('NIK must be less than 50 characters'),
     body('role').isIn(['admin', 'user']).withMessage('Invalid role'),
     body('password').custom((value, { req }) => {
         if (req.body.role === 'admin' && !value) {
@@ -44,6 +56,7 @@ router.post('/users', [
 
 router.put('/users/:id', [
     body('name').notEmpty().withMessage('Name is required'),
+    body('nik').optional().isLength({ max: 50 }).withMessage('NIK must be less than 50 characters'),
     body('role').isIn(['admin', 'user']).withMessage('Invalid role'),
     body('password').optional().custom((value, { req }) => {
         if (req.body.role === 'admin' && value && value.length < 6) {
