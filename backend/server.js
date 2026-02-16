@@ -111,6 +111,20 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/android', androidRoutes);
 app.use('/api/upload', uploadRoutes);
 
+// Serve frontend static files in production
+if (isProd) {
+    const frontendPath = path.join(__dirname, 'dist');
+    app.use(express.static(frontendPath));
+
+    // Handle React Router - all non-API routes serve index.html
+    app.get('*', (req, res, next) => {
+        if (req.path.startsWith('/api') || req.path.startsWith('/uploads')) {
+            return next();
+        }
+        res.sendFile(path.join(frontendPath, 'index.html'));
+    });
+}
+
 // 404 handler
 app.use(notFoundHandler);
 
