@@ -33,8 +33,8 @@ const QuickActions = () => {
     ]
 
     return (
-        <Card className="border-0 shadow-sm fade-in" 
-              style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)' }}>
+        <Card className="border-0 shadow-sm fade-in"
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)' }}>
             <Card.Header className="bg-transparent border-0 py-3">
                 <h5 className="mb-0 fw-bold" style={{ color: 'var(--text-primary)' }}>Quick Actions</h5>
             </Card.Header>

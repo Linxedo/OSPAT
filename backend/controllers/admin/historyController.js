@@ -30,7 +30,7 @@ exports.getHistory = async (req, res) => {
         let paramIndex = 1;
 
         if (search) {
-            whereClause += ` AND (u.name ILIKE $${paramIndex} OR u.employee_id ILIKE $${paramIndex})`;
+            whereClause += ` AND (u.name ILIKE $${paramIndex} OR u.employee_id ILIKE $${paramIndex} OR u.nik ILIKE $${paramIndex})`;
             queryParams.push(`%${search}%`);
             paramIndex++;
         }
@@ -56,7 +56,7 @@ exports.getHistory = async (req, res) => {
             SELECT tr.result_id, tr.test_timestamp, tr.assessment_score, 
                    tr.minigame1_score, tr.minigame2_score, tr.minigame3_score, 
                    tr.minigame4_score, tr.minigame5_score,
-                   tr.total_score, u.name, u.employee_id,
+                   tr.total_score, u.name, u.employee_id, u.nik,
                    CASE
                        WHEN tr.total_score >= $${paramIndex} THEN 'Fit'
                        ELSE 'Unfit'

@@ -84,6 +84,12 @@ const HistoryTable = ({
                                             Employee ID
                                         </div>
                                     </th>
+                                    <th className="border-0 text-nowrap">
+                                        <div className="d-flex align-items-center">
+                                            <i className="bi bi-fingerprint me-2 text-muted"></i>
+                                            NIK
+                                        </div>
+                                    </th>
                                     <th className="border-0 text-center text-nowrap">
                                         <div className="d-flex align-items-center justify-content-center">
                                             <i className="bi bi-clipboard-data me-2 text-muted"></i>
@@ -140,6 +146,12 @@ const HistoryTable = ({
                                                 <div className="d-flex align-items-center">
                                                     <i className="bi bi-card-text me-2 text-muted small"></i>
                                                     <span className="fw-mono text-muted">{result.employee_id}</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div className="d-flex align-items-center">
+                                                    <i className="bi bi-fingerprint me-2 text-muted small"></i>
+                                                    <span className="fw-mono text-muted">{result.nik || '-'}</span>
                                                 </div>
                                             </td>
                                             <td className="text-center">
